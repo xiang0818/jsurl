@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
+  <style>
+   /* Global styles */
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    h1, textarea {
+      width: 80%;
+      margin-top: 20px;
+    }
+
+    textarea {
+      height: 100px;
+    }
+
+    button {
+      margin-top: 10px;
+    }
+
+    /* Image container styles */
+    .image-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .thumbnail {
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+      margin: 5px;
+      cursor: pointer;
+    }
+
+    /* Tab styles */
+    .tab {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="ui container">
+	<div class="ui form">
+		<div class="field">
+          <label>输入链接和文件名:</label>
+          <textarea id="linesInput" rows="5" placeholder="Example: https://example.com/image1.jpg----image1"></textarea>
+        </div>
+	 </div>
+    <div>
+	
+      <button class="ui button" onclick="yuLan('tab1')">预览</button>
+      <button class="ui button" onclick="xiazai('tab2')">下载</button>
+    </div>
+    <div class="tab" id="tab2">
+      <div class="ui form">
+        <div class="field">
+          <label>自定义请求头（看不懂不要填内容）:</label>
+          <textarea id="headerId" placeholder='{"Accept": "image/jpeg"}'>{ "Referer":"","Accept": "image/jpeg" }</textarea>
+          <label>输入保存文件名（默认img）:</label>
+          <input type="text" id="zipFilename" placeholder="img">
+        </div>
+        <button class="ui primary button" onclick="startDownload()">开始下载</button>
+      </div>
+
+      <div class="ui progress" id="progressBar" style="display: none;">
+        <div class="bar"></div>
+        <div class="label">正在下载...</div>
+      </div>
+
+      <div class="ui success message" id="successMessage" style="display: none;">
+        <div class="header">下载</div>
+        <p>所有图片已下载并保存为ZIP文件。</p>
+        <p>您可以通过<a id="downloadLink">点击此处</a>下载ZIP文件。</p>
+      </div>
+    </div>
+
+   <div class="tab" id="tab1">
+		<br>
+		<div class="ui form">
+			<button class="ui primary button" onclick="addImages()">重新加载</button>  
+		</div>
+	</div>
+      <div class="image-container" id="imageContainer"></div>
+      <div class="image-container" id="imageContainer2"></div>
+    </div>
+
+  <script>
+    function showTab(tabName) {
+      // Hide all tabs
+      var tabs = document.getElementsByClassName('tab');
+      for (var i = 0; i < tabs.length; i++) {
+        tabs[i].style.display = 'none';
+      }
+
+      // Show the selected tab
+      var tab = document.getElementById(tabName);
+      tab.style.display = 'block';
+    }
+	
+	function yuLan(tabName){
+	
+	  var textarea = document.getElementById('linesInput');
+      var inputText = textarea.value.trim();
+      var imageUrls = inputText.split('\n');
+      console.log( imageUrls.length );
+
+	  if(imageUrls.length ===1 && imageUrls[0]===''){
+		return;
+	  }
+		showTab(tabName);
+		addImages();
+	}
+	
+	function xiazai(tabName){
+	addImages();
+	showTab(tabName);
+	
+	}
+	
+	
+
+    function addImages() {
+      var container = document.getElementById('imageContainer2');
+      container.innerHTML = ''; 
+       var textarea = document.getElementById('linesInput');
+      var inputText = textarea.value.trim();
+      var imageUrls = inputText.split('\n');
+      imageUrls.forEach(function(url) {
+        var imageElement = document.createElement('img');
+        imageElement.src = url.split('----')[0].trim();
+        imageElement.classList.add('thumbnail');
+        imageElement.addEventListener('click', function() {
+          toggleFullscreen(imageElement);
+        });
+        container.appendChild(imageElement);
+      });
+    }
+	 
+
+    function toggleFullscreen(imageElement) {
+      if (!document.fullscreenElement) {
+        if (imageElement.requestFullscreen) {
+          imageElement.requestFullscreen();
+        } else if (imageElement.mozRequestFullScreen) {
+          imageElement.mozRequestFullScreen();
+        } else if (imageElement.webkitRequestFullscreen) {
+          imageElement.webkitRequestFullscreen();
+        } else if (imageElement.msRequestFullscreen) {
+          imageElement.msRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+          document.mozCancelFullScreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
+        }
+      }
+    }
+
+    // Show the first tab by default
+   
+
+    function downloadImage(line, zip, callback) {
+      var url = line.split('----')[0];
+      var filename = line.split('----')[1];
+      var headerId = document.getElementById('headerId');
+      console.log('Downloaded: ' + headerId.value.trim());
+
+      var headers = {
+        "Accept": "image/jpeg"
+      };
+      $.ajax({
+        url: url,
+        headers: headers,
+        crossDomain: true,
+        xhrFields: {
+          responseType: 'blob'
+        },
+        success: function(response) {
+          console.log('Downloaded: ' + url);
+          zip.file(filename, response);
+          callback();
+        },
+        error: function(xhr, status, error) {
+          console.log('Failed to download: ' + url);
+          callback();
+        }
+      });
+    }
+
+    function startDownload() {
+      var linesInput = document.getElementById('linesInput');
+      var lines = linesInput.value.split('\n');
+
+      var zipFilenameInput = document.getElementById('zipFilename');
+      var zipFilename = zipFilenameInput.value || 'img_' + Date.now();
+
+      zipFilename = zipFilename + '.zip';
+      var zip = new JSZip();
+
+           var downloadCount = 0;
+      var totalImages = lines.length;
+
+      var progressBar = $('#progressBar');
+      progressBar.progress({
+        total: totalImages,
+        text: {
+          active: '正在下载 {value} / {total} 张图片',
+          success: '所有图片已下载'
+        }
+      });
+
+      progressBar.show();
+
+      lines.forEach(function(line) {
+        downloadImage(line, zip, function() {
+          downloadCount++;
+          progressBar.progress('set progress', downloadCount);
+
+          if (downloadCount === totalImages) {
+            zip.generateAsync({type: "blob"}).then(function(content) {
+              var downloadLink = document.getElementById('downloadLink');
+              downloadLink.href = URL.createObjectURL(content);
+              downloadLink.download = zipFilename;
+
+              progressBar.hide();
+              var successMessage = document.getElementById('successMessage');
+              successMessage.style.display = 'block';
+            });
+          }
+        });
+      });
+    }
+  </script>
+</body>
+</html>

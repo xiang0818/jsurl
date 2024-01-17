@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
+</head>
+<body>
+  <div class="ui container">
+    <div class="ui form">
+      <div class="field">
+        <label>输入链接和文件名:</label>
+        <textarea id="linesInput" rows="5" placeholder="Example:
+https://example.com/image1.jpg----image1
+https://example.com/image2.jpg----image2"></textarea>
+      </div>
+      <div class="field"> 
+		<label>自定义请求头（看不懂不要填内容）:</label>
+		<textarea   id="headerId"  placeholder='{
+        "Accept": "image/jpeg"
+      }'>{
+"Referer":"",
+"Accept": "image/jpeg"
+}</textarea>
+	  <label>输入保存文件名（默认img）:</label>
+        <input type="text" id="zipFilename" placeholder="img">
+      </div>
+      <button class="ui primary button" onclick="startDownload()">Start Download</button>
+    </div>
+
+    <div class="ui progress" id="progressBar" style="display: none;">
+      <div class="bar"></div>
+      <div class="label">Downloading...</div>
+    </div>
+
+    <div class="ui success message" id="successMessage" style="display: none;">
+      <div class="header">下载</div>
+      <p>All images have been downloaded and saved as a ZIP file.</p>
+      <p>You can <a id="downloadLink">click here</a> to download the ZIP file.</p>
+    </div>
+  </div>
+
+  <script>
+    function downloadImage(line, zip ,callback) {
+      var url = line.split('----')[0];
+      var filename = line.split('----')[1];  
+	  var headerId = document.getElementById('headerId');
+	  console.log('Downloaded: ' + headerId.value.trim()); 
+	  
+	  
+	  // var headers=JSON.parse(headerId.value);
+	  
+	  var headers={
+        "Accept": "image/jpeg"
+      }
+      $.ajax({
+        url: url,
+        headers: headers, 
+		crossDomain: true, 
+        xhrFields: {
+         responseType: 'blob'
+        },
+        success: function(response) {
+          console.log('Downloaded: ' + url);
+          zip.file(filename, response); 
+          callback();
+        },
+        error: function(xhr, status, error) {
+          console.log('Failed to download: ' + url);
+          callback();
+        }
+      });
+    }
+
+    function startDownload() {
+      var linesInput = document.getElementById('linesInput');
+      var lines = linesInput.value.split('\n');
+
+      var zipFilenameInput = document.getElementById('zipFilename');
+      var zipFilename = zipFilenameInput.value || 'img_'+Date.now();
+ 
+ 
+	  zipFilename=zipFilename+'.zip';
+      var zip = new JSZip();
+
+      var downloadCount = 0;
+      var totalImages = lines.length;
+
+      var progressBar = $('#progressBar');
+      progressBar.progress({
+        total: totalImages,
+        text: {
+          active: 'Downloading {value} of {total} images',
+          success: 'All images have been downloaded'
+        }
+      });
+
+      progressBar.show();
+
+      lines.forEach(function(line) {
+        downloadImage(line, zip, function() {
+          downloadCount++;
+          progressBar.progress('set progress', downloadCount);
+
+          if (downloadCount === totalImages) {
+            zip.generateAsync({ type: 'blob' })
+              .then(function(content) {
+                var downloadLink = document.getElementById('downloadLink');
+                downloadLink.href = window.URL.createObjectURL(content);
+                downloadLink.download = zipFilename;
+
+                var successMessage = document.getElementById('successMessage');
+                successMessage.style.display = 'block';
+
+                progressBar.hide();
+              }).catch(function(error) {
+                console.error('Error generating ZIP file:', error);
+              });
+          }
+        });
+      });
+    }
+
+    // 显示下载按钮
+     $(document).ready(function() {
+     $('.ui.primary.button').show();
+    });
+  </script>
+</body>
+</html>

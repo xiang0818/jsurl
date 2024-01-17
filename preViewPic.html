@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fullscreen Image Viewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            margin-top: 20px;
+        }
+        textarea {
+            width: 80%;
+            height: 100px;
+            margin-top: 20px;
+        }
+        button {
+            margin-top: 10px;
+        }
+        #imageContainer {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+        }
+		 #imageContainer2 {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .thumbnail {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            margin: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>预览图片，点击图片全屏展示</h1>
+    <textarea id="imageInput" placeholder="Enter image URLs, one per line"></textarea>
+    <button onclick="addImages()">添加链接</button>
+    <div id="imageContainer"></div>
+	<div id="imageContainer2"></div>
+
+
+    <script>
+	var defaultImages = [
+               
+            ];
+        function addImages() { 
+            var container = document.getElementById('imageContainer2');
+            container.innerHTML = ''; // Clear previous images
+			// 获取textarea元素
+			var textarea = document.getElementById('imageInput');
+
+			// 获取textarea的值
+			var inputText = textarea.value;
+
+			// 按照换行符进行切割
+			var imageUrls = inputText.split('\n'); 
+            imageUrls.forEach(function(url) {
+                var imageElement = document.createElement('img');
+                imageElement.src = url.trim();
+                imageElement.classList.add('thumbnail');
+                imageElement.addEventListener('click', function() {
+                    toggleFullscreen(imageElement);
+                });
+                container.appendChild(imageElement);
+            });
+        }
+		
+		function init(){
+		 var container = document.getElementById('imageContainer');
+
+		 defaultImages.forEach(function(url) {
+                var imageElement = document.createElement('img');
+                imageElement.src = url.trim();
+                imageElement.classList.add('thumbnail');
+                imageElement.addEventListener('click', function() {
+                    toggleFullscreen(imageElement);
+                });
+                container.appendChild(imageElement);
+            });
+		}
+		window.onload = function(){
+			init();
+			}
+        function toggleFullscreen(imageElement) {
+            if (!document.fullscreenElement) {
+                if (imageElement.requestFullscreen) {
+                    imageElement.requestFullscreen();
+                } else if (imageElement.mozRequestFullScreen) { /* Firefox */
+                    imageElement.mozRequestFullScreen();
+                } else if (imageElement.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+                    imageElement.webkitRequestFullscreen();
+                } else if (imageElement.msRequestFullscreen) { /* IE/Edge */
+                    imageElement.msRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.mozCancelFullScreen) { /* Firefox */
+                    document.mozCancelFullScreen();
+                } else if (document.webkitExitFullscreen) { /* Chrome, Safari and Opera */
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) { /* IE/Edge */
+                    document.msExitFullscreen();
+                }
+            }
+        }
+    </script>
+</body>
+</html>

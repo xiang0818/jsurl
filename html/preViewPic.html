@@ -41,6 +41,11 @@
             margin: 5px;
             cursor: pointer;
         }
+		.fullscreen {
+        object-fit: contain;
+        width: 100vw;
+        height: 100vh;
+    }
     </style>
 </head>
 <body>
@@ -93,29 +98,31 @@
 		window.onload = function(){
 			init();
 			}
-        function toggleFullscreen(imageElement) {
-            if (!document.fullscreenElement) {
-                if (imageElement.requestFullscreen) {
-                    imageElement.requestFullscreen();
-                } else if (imageElement.mozRequestFullScreen) { /* Firefox */
-                    imageElement.mozRequestFullScreen();
-                } else if (imageElement.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
-                    imageElement.webkitRequestFullscreen();
-                } else if (imageElement.msRequestFullscreen) { /* IE/Edge */
-                    imageElement.msRequestFullscreen();
-                }
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.mozCancelFullScreen) { /* Firefox */
-                    document.mozCancelFullScreen();
-                } else if (document.webkitExitFullscreen) { /* Chrome, Safari and Opera */
-                    document.webkitExitFullscreen();
-                } else if (document.msExitFullscreen) { /* IE/Edge */
-                    document.msExitFullscreen();
-                }
-            }
+       function toggleFullscreen(imageElement) {
+    if (!document.fullscreenElement) {
+        imageElement.classList.add('fullscreen');  // Add a class for styling
+        if (imageElement.requestFullscreen) {
+            imageElement.requestFullscreen();
+        } else if (imageElement.mozRequestFullScreen) { /* Firefox */
+            imageElement.mozRequestFullScreen();
+        } else if (imageElement.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+            imageElement.webkitRequestFullscreen();
+        } else if (imageElement.msRequestFullscreen) { /* IE/Edge */
+            imageElement.msRequestFullscreen();
         }
+    } else {
+        imageElement.classList.remove('fullscreen');  // Remove the fullscreen class
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.mozCancelFullScreen) { /* Firefox */
+            document.mozCancelFullScreen();
+        } else if (document.webkitExitFullscreen) { /* Chrome, Safari and Opera */
+            document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) { /* IE/Edge */
+            document.msExitFullscreen();
+        }
+    }
+}
     </script>
 </body>
 </html>

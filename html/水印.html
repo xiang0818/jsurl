@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>水印助手</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<style>
+body {
+  margin: 0;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.image-container,
+.form-container {
+  width: 50%;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+form {
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  margin-bottom: 10px;
+}
+
+input[type="text"],
+input[type="color"],
+input[type="range"] {
+  width: 100%;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+canvas {
+  display: block;
+  margin-bottom: 20px;
+  border: 3px solid #2c3e50;
+  border-radius: 5px;
+}
+
+.save-container {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.save-container a {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #2c3e50;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 3px;
+}
+</style
+<body>
+<header>
+    <h1>水印助手</h1>
+</header>
+
+<div class="container">
+  <div class="image-container">
+    <canvas></canvas> 
+  </div>
+  
+  <div class="form-container">
+    <form>
+        <div>
+            <label for="upload-input">选择图片：</label>
+            <input id="upload-input" type="file" accept="image/*">
+        </div>
+        <div>
+            <label for="content">水印文字：</label>
+            <input id="content" type="text" value="仅供XX实名认证使用">
+        </div>
+        <div>
+            <label for="color">水印颜色：</label>
+            <input id="color" type="color" value="#ffffff">
+        </div>
+        <div>
+            <label for="alpha">不透明度：</label>
+            <input id="alpha" type="range" min="10" max="100" value="50">
+        </div>
+        <div>
+            <label for="size">水印大小比：</label>
+            <input id="size" type="range" min="3" max="10" value="5">
+        </div>
+        <div>
+            <label for="gap">水印间隔比：</label>
+            <input id="gap" type="range" min="20" max="300" value="150">
+        </div>
+        <div>
+            <label for="font">水印字体：</label>
+            <input id="font" type="text"  value="sans-serif">
+        </div>
+		 <footer>
+      <div class="save-container">
+          <a href="javascript:alert('请先打开图片')" download>保存图片</a>
+      </div>
+    </footer>
+    </form>
+  </div>
+</div>
+
+<script>
+    var img = null;
+    document.addEventListener('change', function (ev) {
+        if (ev.target.type === 'file') {
+            if (!ev.target.files.length) return;
+            var file = ev.target.files[0];
+            createBitmap(file, function (result) {
+                img = result;
+                repaint()
+            });
+            var newName = file.name.split('.');
+            newName.splice(-1, 0, 'watermarked');
+            document.getElementsByTagName('a')[0].download = newName.join('.');
+        } else {
+            repaint()
+        }
+    });
+
+    function repaint() {
+        if (!img) return;
+        var ctx = document.getElementsByTagName('canvas')[0].getContext('2d');
+        ctx.canvas.width = img.width;
+        ctx.canvas.height = img.height;
+        var maxSize = Math.max(img.height, img.width);
+        ctx.canvas.style.height = (img.height / img.width) * 100 + '%';
+        ctx.restore();
+        ctx.drawImage(img, 0, 0);
+        ctx.fillStyle = document.getElementById('color').value;
+        ctx.globalAlpha = document.getElementById('alpha').value / 100;
+        var size = (document.getElementById('size').value * maxSize / 100);
+ctx.font = size + 'px "' + document.getElementById('font').value + '"';
+        ctx.textBaseline = 'middle';
+        ctx.rotate(-45 * Math.PI / 180);
+        var gap = size * document.getElementById('gap').value / 100;
+        var content = document.getElementById('content').value;
+        if (!content.length) return;
+        var limit = Math.sqrt(2 * (maxSize * maxSize));
+        var breaker = ctx.measureText(content).width;
+        for (var h = -maxSize, even = false; h <= limit; h += size + gap, even = !even) {
+            for (var v = -maxSize - (even ? breaker / 2 : 0); v <= limit + (even ? breaker / 2 : 0); v += breaker + size) {
+                ctx.fillText(content, v, h);
+            }
+        }
+        document.getElementsByTagName('a')[0].href = ctx.canvas.toDataURL()
+    }
+
+    function createBitmap(blob, callback) {
+        var img = document.createElement('img');
+        img.addEventListener('load', function () {
+            callback(this);
+        });
+        img.src = URL.createObjectURL(blob);
+    }
+</script>
+</body>
+</html>

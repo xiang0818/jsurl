@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Excel 数据处理工具（终极版）</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <style>
+        .data-panel { border: 1px solid #dee2e6; border-radius: 5px; margin: 1rem 0; }
+        .table-container { max-height: 60vh; overflow-y: auto; }
+        .table thead th { position: sticky; top: 0; background: white; z-index: 1; }
+        .table-hover tbody tr:hover { background-color: rgba(0, 123, 255, 0.05); }
+        .status-badge { font-size: 0.9rem; }
+        .toast { position: fixed; bottom: 20px; right: 20px; }
+        .preset-tag { margin: 2px; cursor: pointer; }
+        .preset-btns { margin: 10px 0; gap: 5px; }
+        .preset-btn { padding: 5px 10px; }
+        .loading-overlay { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(255,255,255,0.8); 
+            z-index: 1000; 
+            justify-content: center; 
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay">
+        <div class="spinner-border text-primary" role="status"></div>
+    </div>
+
+    <div class="container py-4">
+        <!-- 文件上传区 -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-3">📁 上传 Excel 文件</h5>
+                <input type="file" id="fileInput" class="form-control" accept=".xlsx, .xls">
+              
+                <!-- 预设管理区 -->
+                <div class="mt-4">
+                    <small class="text-muted">快捷预设：</small>
+                    <div class="preset-btns d-flex flex-wrap" id="presetButtons"></div>
+                </div>
+
+                <div class="mt-3">
+                    <small class="text-muted">自定义删除列（点击标签或编辑）：</small>
+                    <div id="presetTags" class="d-flex flex-wrap gap-2 my-2"></div>
+                    <input type="text" id="predefinedColumns" class="form-control" 
+                           placeholder="输入列名，用逗号分隔">
+                </div>
+            </div>
+        </div>
+
+        <!-- 操作面板 -->
+        <div id="operationPanel" class="d-none">
+            <!-- 列选择区 -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title">⚙️ 列管理面板</h5>
+                        <span id="status" class="status-badge badge bg-secondary">原始数据</span>
+                    </div>
+                    <div id="columnCheckboxes" class="d-flex flex-wrap gap-3"></div>
+                </div>
+            </div>
+
+            <!-- 功能按钮组 -->
+            <div class="btn-toolbar mb-4 gap-2">
+                <button class="btn btn-primary" onclick="processData()">▶️ 处理数据</button>
+                <button class="btn btn-success" onclick="downloadFile()">⏬ 下载结果</button>
+                <button class="btn btn-warning" onclick="resetData()">⏮️ 还原数据</button>
+                <button class="btn btn-info" onclick="copyToClipboard()">📋 复制数据</button>
+                <button class="btn btn-outline-danger" onclick="clearPreset()">❌ 清空预设</button>
+            </div>
+
+            <!-- 数据展示区 -->
+            <div class="data-panel">
+                <div class="table-container">
+                    <table class="table table-hover table-striped" id="dataTable">
+                        <thead class="table-light"></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 提示信息 -->
+        <div id="errorAlert" class="alert alert-danger d-none mt-4"></div>
+        <div id="copyToast" class="toast" role="alert">
+            <div class="toast-header">
+                <strong class="me-auto">系统提示</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body"></div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 核心配置 ====================
+        const PRESET_CONFIG = {
+            '股票涨停数据': ['序号',
+			'股票链接',
+			'涨停明细数据',
+			'涨停明细数据链接',
+			'涨停原因类别链接',
+			'股流通市值链接',
+			'涨停类型',
+			'涨停类型1',
+			'涨停类型2',
+			'涨停'
+			],
+            '敏感信息列': ['手机号', '身份证号', '地址'],
+            '系统字段列': ['创建时间', '更新时间', '操作人'],
+            '测试数据列': ['测试ID', '模拟数据', '调试标记']
+        };
+
+        // ==================== 全局变量 ====================
+        let originalData = [];
+        let processedData = [];
+        let currentColumns = [];
+
+        // ==================== 初始化函数 ====================
+        function initPresetButtons() {
+            const container = document.getElementById('presetButtons');
+            container.innerHTML = Object.keys(PRESET_CONFIG).map(name => `
+                <button class="preset-btn btn btn-outline-primary btn-sm" 
+                        onclick="applyPreset('${name}')">${name}</button>
+            `).join('');
+        }
+
+        // ==================== 文件处理 ====================
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            showLoading(true);
+            const reader = new FileReader();
+          
+            reader.onload = function(e) {
+                try {
+                    const workbook = XLSX.read(e.target.result, { type: 'array' });
+                    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                    const headers = jsonData[0];
+                    originalData = jsonData.slice(1).map(row => 
+                        headers.reduce((obj, key, i) => ({ ...obj, [key]: row[i] }), {})
+                    );
+
+                    initUI(headers);
+                    autoProcessAfterUpload();
+                } catch (error) {
+                    showError('文件解析失败: ' + error.message);
+                } finally {
+                    showLoading(false);
+                }
+            };
+            reader.onerror = () => showError('文件读取失败');
+            reader.readAsArrayBuffer(file);
+        });
+
+        // ==================== 核心功能 ====================
+        function initUI(headers) {
+            currentColumns = headers;
+            document.getElementById('operationPanel').classList.remove('d-none');
+            initPresetButtons();
+            initColumnCheckboxes(headers);
+            bindEvents();
+            autoProcessAfterUpload();
+        }
+
+        function initColumnCheckboxes(headers) {
+            document.getElementById('columnCheckboxes').innerHTML = headers.map(header => `
+                <div class="form-check">
+                    <input class="form-check-input preset-checkbox" type="checkbox" 
+                           value="${header}" id="col-${header}">
+                    <label class="form-check-label" for="col-${header}">${header}</label>
+                </div>
+            `).join('');
+        }
+
+        function bindEvents() {
+            const presetInput = document.getElementById('predefinedColumns');
+            presetInput.addEventListener('input', () => {
+                updateCheckboxesFromPreset();
+                if (presetInput.value.trim()) processData();
+            });
+
+            document.querySelectorAll('.preset-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    updatePresetFromCheckboxes();
+                    updatePresetTags();
+                    processData();
+                });
+            });
+        }
+
+        // ==================== 数据处理 ====================
+        function processData() {
+            try {
+                const columnsToDrop = getSelectedColumns();
+                processedData = originalData.map(row => 
+                    Object.fromEntries(
+                        Object.entries(row).filter(([key]) => !columnsToDrop.includes(key))
+                    )
+                );
+                showProcessedResult(processedData);
+                updateStatus('已处理数据', 'success');
+            } catch (error) {
+                showError('数据处理失败: ' + error.message);
+            }
+        }
+
+        // ==================== 预设管理 ====================
+        function applyPreset(presetName) {
+            const columns = PRESET_CONFIG[presetName];
+            if (!columns) return;
+
+            const encoded = columns.map(encodePresetColumn).join(',');
+            document.getElementById('predefinedColumns').value = encoded;
+            updateCheckboxesFromPreset();
+            if (originalData.length) processData();
+            showToast(`已应用预设: ${presetName}`);
+        }
+
+        function clearPreset() {
+            document.getElementById('predefinedColumns').value = '';
+            document.querySelectorAll('.preset-checkbox').forEach(cb => cb.checked = false);
+            updatePresetTags();
+            if (originalData.length) resetData();
+            showToast('预设已清空');
+        }
+
+        // ==================== 工具函数 ====================
+        function autoProcessAfterUpload() {
+            const hasPreset = document.getElementById('predefinedColumns').value.trim() !== '';
+            hasPreset ? processData() : showProcessedResult(originalData);
+        }
+
+        function showProcessedResult(data) {
+            const headers = Object.keys(data[0] || {});
+            document.getElementById('dataTable').innerHTML = `
+                <thead class="table-light">
+                    <tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>
+                </thead>
+                <tbody>
+                    ${data.slice(0, 1000).map(row => `
+                        <tr>${headers.map(h => `<td>${row[h] ?? ''}</td>`).join('')}</tr>
+                    `).join('')}
+                </tbody>
+            `;
+        }
+
+        // ==================== 辅助函数 ====================
+        function updatePresetFromCheckboxes() {
+            document.getElementById('predefinedColumns').value = 
+                getSelectedColumns().map(encodePresetColumn).join(',');
+            updatePresetTags();
+        }
+
+        function updateCheckboxesFromPreset() {
+            const preset = document.getElementById('predefinedColumns').value
+                .split(',')
+                .map(s => decodePresetColumn(s.trim()))
+                .filter(Boolean);
+
+            document.querySelectorAll('.preset-checkbox').forEach(checkbox => {
+                checkbox.checked = preset.includes(checkbox.value);
+            });
+            updatePresetTags();
+        }
+
+        function updatePresetTags() {
+            document.getElementById('presetTags').innerHTML = 
+                document.getElementById('predefinedColumns').value
+                    .split(',')
+                    .map(s => s.trim())
+                    .filter(Boolean)
+                    .map(col => `
+                        <span class="preset-tag badge bg-primary" 
+                            onclick="togglePresetColumn('${encodePresetColumn(col)}')">
+                            ${decodePresetColumn(col)} ×
+                        </span>
+                    `).join('');
+        }
+
+        function encodePresetColumn(col) {
+            return col.replace(/,/g, '__COMMA__');
+        }
+
+        function decodePresetColumn(encoded) {
+            return encoded.replace(/__COMMA__/g, ',');
+        }
+
+        function getSelectedColumns() {
+            return Array.from(document.querySelectorAll('.preset-checkbox:checked'))
+                       .map(cb => cb.value);
+        }
+
+        // ==================== UI 交互 ====================
+        function resetData() {
+            showProcessedResult(originalData);
+            updateStatus('原始数据', 'secondary');
+        }
+
+        function downloadFile() {
+            if (!processedData.length) return showError('请先处理数据');
+            try {
+                const worksheet = XLSX.utils.json_to_sheet(processedData);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, '处理结果');
+                XLSX.writeFile(workbook, '处理结果.xlsx');
+            } catch (error) {
+                showError('文件生成失败: ' + error.message);
+            }
+        }
+
+        function copyToClipboard() {
+            if (!processedData.length) return showError('请先处理数据');
+            try {
+                const headers = [...document.querySelectorAll('#dataTable th')].map(th => th.innerText);
+                const tsvContent = [
+                    headers.join('\t'),
+                    ...processedData.map(row => headers.map(h => row[h] ?? '').join('\t'))
+                ].join('\n');
+                navigator.clipboard.writeText(tsvContent).then(() => {
+                    showToast('数据已复制到剪贴板');
+                }).catch(() => showError('请手动选择数据复制'));
+            } catch (error) {
+                showError('复制失败: ' + error.message);
+            }
+        }
+
+        function togglePresetColumn(encodedCol) {
+            const col = decodePresetColumn(encodedCol);
+            const checkbox = document.querySelector(`.preset-checkbox[value="${col}"]`);
+            if (checkbox) {
+                checkbox.checked = !checkbox.checked;
+                checkbox.dispatchEvent(new Event('change'));
+            }
+        }
+
+        // ==================== 状态管理 ====================
+        function updateStatus(text, type = 'secondary') {
+            const status = document.getElementById('status');
+            status.className = `status-badge badge bg-${type}`;
+            status.textContent = text;
+        }
+
+        function showLoading(show) {
+            document.querySelector('.loading-overlay').style.display = show ? 'flex' : 'none';
+        }
+
+        function showError(msg) {
+            const alertDiv = document.getElementById('errorAlert');
+            alertDiv.textContent = msg;
+            alertDiv.classList.remove('d-none');
+            setTimeout(() => alertDiv.classList.add('d-none'), 5000);
+        }
+
+        function showToast(msg) {
+            const toastEl = document.getElementById('copyToast');
+            const toastBody = toastEl.querySelector('.toast-body');
+            toastBody.textContent = msg;
+            new bootstrap.Toast(toastEl).show();
+        }
+    </script>
+</body>
+</html>

@@ -2,171 +2,267 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <title>水印助手</title>
+    <title>高清无损水印工具</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            display: flex;
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .image-container {
+            flex: 1;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .form-container {
+            width: 350px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: #ddd;
+            border-radius: 3px;
+        }
+
+        input[type="text"], input[type="color"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .download-btn {
+            width: 100%;
+            padding: 12px;
+            background: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .download-btn:hover {
+            background: #34495e;
+        }
+
+        .download-btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        .preview-note {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+    </style>
 </head>
-<style>
-body {
-  margin: 0;
-  padding: 20px;
-  font-family: Arial, sans-serif;
-}
-
-.container {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-}
-
-.image-container,
-.form-container {
-  width: 50%;
-  padding: 10px;
-  box-sizing: border-box;
-}
-
-form {
-  margin-bottom: 20px;
-}
-
-label {
-  display: block;
-  margin-bottom: 10px;
-}
-
-input[type="text"],
-input[type="color"],
-input[type="range"] {
-  width: 100%;
-  padding: 5px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-}
-
-canvas {
-  display: block;
-  margin-bottom: 20px;
-  border: 3px solid #2c3e50;
-  border-radius: 5px;
-}
-
-.save-container {
-  text-align: center;
-  margin-top: 20px;
-}
-
-.save-container a {
-  display: inline-block;
-  padding: 10px 20px;
-  background-color: #2c3e50;
-  color: #fff;
-  text-decoration: none;
-  border-radius: 3px;
-}
-</style
 <body>
-<header>
-    <h1>水印助手</h1>
-</header>
-
-<div class="container">
-  <div class="image-container">
-    <canvas></canvas> 
-  </div>
-  
-  <div class="form-container">
-    <form>
-        <div>
-            <label for="upload-input">选择图片：</label>
-            <input id="upload-input" type="file" accept="image/*">
+    <div class="container">
+        <div class="image-container">
+            <canvas id="previewCanvas"></canvas>
+            <p class="preview-note">预览区域（实际输出尺寸与原始图片一致）</p>
         </div>
-        <div>
-            <label for="content">水印文字：</label>
-            <input id="content" type="text" value="仅供XX实名认证使用">
+        
+        <div class="form-container">
+            <div class="form-group">
+                <label for="upload-input">选择图片 ▸</label>
+                <input id="upload-input" type="file" accept="image/*">
+            </div>
+            
+            <div class="form-group">
+                <label for="content">水印文字 ▸</label>
+                <input id="content" type="text" value="仅供认证使用" placeholder="输入水印内容">
+            </div>
+            
+            <div class="form-group">
+                <label for="color">水印颜色 ▸</label>
+                <input id="color" type="color" value="#ffffff">
+            </div>
+            
+            <div class="form-group">
+                <label>不透明度 ▸ <span id="alphaValue">50</span>%</label>
+                <input id="alpha" type="range" min="10" max="100" value="50">
+            </div>
+            
+            <div class="form-group">
+                <label>水印大小 ▸ <span id="sizeValue">5</span>%</label>
+                <input id="size" type="range" min="2" max="15" value="5">
+            </div>
+            
+            <div class="form-group">
+                <label>水印间隔 ▸ <span id="gapValue">150</span>%</label>
+                <input id="gap" type="range" min="50" max="300" value="150">
+            </div>
+            
+            <button id="download-btn" class="download-btn" disabled>下载高清图片</button>
         </div>
-        <div>
-            <label for="color">水印颜色：</label>
-            <input id="color" type="color" value="#ffffff">
-        </div>
-        <div>
-            <label for="alpha">不透明度：</label>
-            <input id="alpha" type="range" min="10" max="100" value="50">
-        </div>
-        <div>
-            <label for="size">水印大小比：</label>
-            <input id="size" type="range" min="3" max="10" value="5">
-        </div>
-        <div>
-            <label for="gap">水印间隔比：</label>
-            <input id="gap" type="range" min="20" max="300" value="150">
-        </div>
-        <div>
-            <label for="font">水印字体：</label>
-            <input id="font" type="text"  value="sans-serif">
-        </div>
-		 <footer>
-      <div class="save-container">
-          <a href="javascript:alert('请先打开图片')" download>保存图片</a>
-      </div>
-    </footer>
-    </form>
-  </div>
-</div>
+    </div>
 
 <script>
-    var img = null;
-    document.addEventListener('change', function (ev) {
-        if (ev.target.type === 'file') {
-            if (!ev.target.files.length) return;
-            var file = ev.target.files[0];
-            createBitmap(file, function (result) {
-                img = result;
-                repaint()
-            });
-            var newName = file.name.split('.');
-            newName.splice(-1, 0, 'watermarked');
-            document.getElementsByTagName('a')[0].download = newName.join('.');
-        } else {
-            repaint()
-        }
+const controls = {
+    canvas: document.getElementById('previewCanvas'),
+    upload: document.getElementById('upload-input'),
+    content: document.getElementById('content'),
+    color: document.getElementById('color'),
+    alpha: document.getElementById('alpha'),
+    size: document.getElementById('size'),
+    gap: document.getElementById('gap'),
+    alphaValue: document.getElementById('alphaValue'),
+    sizeValue: document.getElementById('sizeValue'),
+    gapValue: document.getElementById('gapValue'),
+    downloadBtn: document.getElementById('download-btn')
+};
+
+let sourceImage = null;
+let renderCanvas = new OffscreenCanvas(1, 1);
+let dpr = 1;
+
+// 初始化事件监听
+controls.upload.addEventListener('change', handleUpload);
+controls.downloadBtn.addEventListener('click', handleDownload);
+['input', 'change'].forEach(evt => {
+    ['alpha', 'size', 'gap', 'color', 'content'].forEach(id => {
+        document.getElementById(id).addEventListener(evt, debounce(updatePreview));
     });
+});
 
-    function repaint() {
-        if (!img) return;
-        var ctx = document.getElementsByTagName('canvas')[0].getContext('2d');
-        ctx.canvas.width = img.width;
-        ctx.canvas.height = img.height;
-        var maxSize = Math.max(img.height, img.width);
-        ctx.canvas.style.height = (img.height / img.width) * 100 + '%';
-        ctx.restore();
-        ctx.drawImage(img, 0, 0);
-        ctx.fillStyle = document.getElementById('color').value;
-        ctx.globalAlpha = document.getElementById('alpha').value / 100;
-        var size = (document.getElementById('size').value * maxSize / 100);
-ctx.font = size + 'px "' + document.getElementById('font').value + '"';
-        ctx.textBaseline = 'middle';
-        ctx.rotate(-45 * Math.PI / 180);
-        var gap = size * document.getElementById('gap').value / 100;
-        var content = document.getElementById('content').value;
-        if (!content.length) return;
-        var limit = Math.sqrt(2 * (maxSize * maxSize));
-        var breaker = ctx.measureText(content).width;
-        for (var h = -maxSize, even = false; h <= limit; h += size + gap, even = !even) {
-            for (var v = -maxSize - (even ? breaker / 2 : 0); v <= limit + (even ? breaker / 2 : 0); v += breaker + size) {
-                ctx.fillText(content, v, h);
-            }
+async function handleUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    sourceImage = await loadImage(file);
+    controls.downloadBtn.disabled = false;
+    updatePreview();
+}
+
+async function loadImage(file) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.src = URL.createObjectURL(file);
+    });
+}
+
+function updatePreview() {
+    if (!sourceImage) return;
+    
+    // 更新数值显示
+    controls.alphaValue.textContent = controls.alpha.value;
+    controls.sizeValue.textContent = controls.size.value;
+    controls.gapValue.textContent = controls.gap.value;
+    
+    // 设置画布尺寸
+    dpr = window.devicePixelRatio || 1;
+    controls.canvas.width = sourceImage.width;
+    controls.canvas.height = sourceImage.height;
+    
+    // 创建高分辨率离屏画布
+    renderCanvas = new OffscreenCanvas(sourceImage.width * dpr, sourceImage.height * dpr);
+    const ctx = renderCanvas.getContext('2d');
+    
+    // 高质量渲染设置
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.scale(dpr, dpr);
+    
+    // 绘制原始图像
+    ctx.drawImage(sourceImage, 0, 0, sourceImage.width, sourceImage.height);
+    
+    // 添加水印
+    applyWatermark(ctx);
+    
+    // 更新预览
+    const previewCtx = controls.canvas.getContext('2d');
+    previewCtx.drawImage(renderCanvas, 0, 0, sourceImage.width, sourceImage.height);
+}
+
+function applyWatermark(ctx) {
+    ctx.save();
+    
+    // 水印样式
+    ctx.fillStyle = controls.color.value;
+    ctx.globalAlpha = controls.alpha.value / 100;
+    const baseSize = Math.max(sourceImage.width, sourceImage.height);
+    const fontSize = baseSize * (controls.size.value / 100);
+    ctx.font = `${fontSize}px sans-serif`;
+    
+    // 旋转布局
+    ctx.translate(sourceImage.width/2, sourceImage.height/2);
+    ctx.rotate(-45 * Math.PI / 180);
+    
+    // 水印分布
+    const metrics = ctx.measureText(controls.content.value);
+    const gap = fontSize * (controls.gap.value / 100);
+    const stepX = metrics.width + gap;
+    const stepY = fontSize + gap;
+    
+    const coverage = Math.sqrt(sourceImage.width**2 + sourceImage.height**2);
+    for (let x = -coverage; x < coverage*2; x += stepX) {
+        for (let y = -coverage; y < coverage*2; y += stepY) {
+            ctx.fillText(controls.content.value, Math.round(x), Math.round(y));
         }
-        document.getElementsByTagName('a')[0].href = ctx.canvas.toDataURL()
     }
+    
+    ctx.restore();
+}
 
-    function createBitmap(blob, callback) {
-        var img = document.createElement('img');
-        img.addEventListener('load', function () {
-            callback(this);
-        });
-        img.src = URL.createObjectURL(blob);
-    }
+async function handleDownload() {
+    const blob = await renderCanvas.convertToBlob({ type: 'image/jpeg', quality: 0.95 });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `watermarked_${controls.upload.files[0].name}`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+// 工具函数
+function debounce(fn, delay = 100) {
+    let timer;
+    return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), delay);
+    };
+}
 </script>
 </body>
 </html>

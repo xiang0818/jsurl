@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Java 面试题格式转换器</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --light: #ecf0f1;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui;
+            background: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 25px;
+            transition: transform 0.2s;
+        }
+
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 15px;
+            border: 2px solid var(--light);
+            border-radius: 8px;
+            font-family: Consolas, monospace;
+            resize: vertical;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        button {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        pre {
+            white-space: pre-wrap;
+            word-break: break-word;
+            padding: 15px;
+            background: var(--light);
+            border-radius: 8px;
+            max-height: 300px; /* 限制最大高度 */
+            overflow-y: auto; /* 添加垂直滚动条 */
+        }
+
+        /* 自定义滚动条样式 */
+        pre::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        pre::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        pre::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        pre::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h3>原始数据输入</h3>
+            <textarea id="inputArea" placeholder="粘贴您的JSON数组..."></textarea>
+            <div class="btn-group">
+                <button onclick="processData()">转换格式</button>
+                <button onclick="clearAll()">清空内容</button>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>处理结果</h3>
+            <pre id="outputArea">等待处理...</pre>
+        </div>
+    </div>
+
+<script>
+// 智能处理函数
+function processData() {
+    const input = document.getElementById('inputArea').value;
+    const output = document.getElementById('outputArea');
+    
+    try {
+        // 双重处理机制 
+        const processed = input
+            // 去除所有非必要引号
+            .replace(/(?:\"|\“|\”)([^"]+)(?:\"|\“|\”)/g, '$1')
+            // 处理方括号和逗号
+            .replace(/[$$$$,]/g, '')
+            // 格式化换行
+            //.replace(/\n/g, '')
+			.replace(/\\n/g, '\n');
+            
+        output.textContent = processed;
+        output.classList.remove('error');
+    } catch (error) {
+        output.textContent = `❌ 处理失败：${error.message}\n✔ 推荐检查：\n1. 是否保留完整JSON结构\n2. 是否包含未转义字符`;
+        output.classList.add('error');
+    }
+}
+
+// 清空功能
+function clearAll() {
+    document.getElementById('inputArea').value = '';
+    document.getElementById('outputArea').textContent = '等待处理...';
+    document.getElementById('outputArea').classList.remove('error');
+}
+
+// 初始化示例数据
+document.getElementById('inputArea').value = JSON.stringify([
+  "Java 中的序列化和反序列化是什么？",
+  "你认为 Java 的优势是什么？",
+  // 其他问题...
+], null, 2);
+
+// 自动处理演示
+setTimeout(processData, 500);
+</script>
+</body>
+</html>

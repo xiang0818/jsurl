@@ -1029,9 +1029,9 @@ links:
   # Member item of page
   items:
     - {
-      title: "Fluid Blog",
-      intro: "主题博客",
-      link: "https://hexo.fluid-dev.com/",
+      title: "每日涨停数据",
+      intro: "每日涨停数据",
+      link: "http://114.55.224.253:8501/",
       avatar: "/img/favicon.png"
     }
     - {

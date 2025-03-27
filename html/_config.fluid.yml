@@ -1046,6 +1046,12 @@ links:
       link: "https://github.com/fluid-dev/hexo-theme-fluid",
       avatar: "/img/favicon.png"
     }
+    - {
+      title: "spli",
+      intro: "字符处理",
+      link: "/html/spli.html",
+      avatar: "/img/favicon.png"
+    }
 
   # 当成员头像加载失败时，替换为指定图片
   # When the member avatar fails to load, replace the specified image

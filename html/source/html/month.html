@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025年4月财经事件与影响板块</title>
+    
+    <!-- CDN依赖 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.18.13/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mui/material@5.14.5/umd/material-ui.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/uuid@8.3.2/dist/umd/uuidv4.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .chip-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .color-picker-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            align-items: center;
+        }
+        .color-picker-item {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .color-picker-label {
+            font-size: 0.85rem;
+            margin-bottom: 0.25rem;
+        }
+        .floating-menu {
+            transition: transform 0.3s ease;
+        }
+        .floating-menu:hover {
+            transform: translateX(0) !important;
+        }
+        .menu-trigger {
+            transition: all 0.3s ease;
+        }
+        .menu-trigger:hover {
+            filter: brightness(1.1);
+        }
+        .search-bar {
+            display: flex;
+            margin-bottom: 1rem;
+            gap: 0.5rem;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .form-row {
+            margin-bottom: 1rem;
+        }
+        .chip-input {
+            margin-top: 0.5rem;
+        }
+        .tag-select {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+<script type="text/babel">
+const {
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+  Paper, Chip, Typography, createTheme, ThemeProvider, styled,
+  Button, Dialog, DialogTitle, DialogContent, DialogActions,
+  TextField, Box, Accordion, AccordionSummary, AccordionDetails,
+  IconButton, InputAdornment, Tooltip, Fab, Avatar, Grid,
+  Stack, Divider, Autocomplete, FormControl, InputLabel,
+  Select, MenuItem, Switch, FormControlLabel, Snackbar, Alert,
+  Card, CardContent, CardActions, Pagination
+} = window['MaterialUI'];
+
+// ========== 配色配置 ==========
+const colorThemes = {
+  // 原始配色方案
+  default: {
+    primary: '#aa96da',       // 主色（表头/强调元素）
+    secondary: '#fcbad3',     // 强调色（标签/按钮）
+    background: '#ffffd2',    // 页面背景
+    paper: '#a8d8ea',         // 卡片背景
+    textPrimary: '#5e548e',   // 主要文字颜色
+    textSecondary: '#6a5b8e', // 次要文字颜色
+    hover: '#ff9ebb',         // 悬停色
+    oddRow: '#f5f5c6',        // 斑马纹
+    border: '#8b7db3',        // 边框色
+    shadow: '#aa96da33',      // 阴影颜色
+    tableHeaderText: '#ffffd2' // 表头文字颜色
+  },
+  
+  // 清新蓝色方案
+  blueTheme: {
+    primary: '#4a6fa5',       // 主色
+    secondary: '#90c2e7',     // 强调色
+    background: '#e8f4f8',    // 页面背景
+    paper: '#c5e3f6',         // 卡片背景
+    textPrimary: '#2c3e50',   // 主要文字颜色
+    textSecondary: '#34495e', // 次要文字颜色
+    hover: '#75b9e7',         // 悬停色
+    oddRow: '#d6eaf8',        // 斑马纹
+    border: '#5d87b7',        // 边框色
+    shadow: '#4a6fa533',      // 阴影颜色
+    tableHeaderText: '#ffffff' // 表头文字颜色
+  },
+  
+  // 雅致绿色方案
+  greenTheme: {
+    primary: '#2e8b57',       // 主色
+    secondary: '#98d8aa',     // 强调色
+    background: '#f0f7f0',    // 页面背景
+    paper: '#d1e7dd',         // 卡片背景
+    textPrimary: '#1e3a2b',   // 主要文字颜色
+    textSecondary: '#2c513d', // 次要文字颜色
+    hover: '#7acb8e',         // 悬停色
+    oddRow: '#e0f0e3',        // 斑马纹
+    border: '#3c9a6b',        // 边框色
+    shadow: '#2e8b5733',      // 阴影颜色
+    tableHeaderText: '#ffffff' // 表头文字颜色
+  },
+  
+  // 暖橙方案
+  orangeTheme: {
+    primary: '#e67e22',       // 主色
+    secondary: '#f8c291',     // 强调色
+    background: '#fff5e6',    // 页面背景
+    paper: '#fce1bc',         // 卡片背景
+    textPrimary: '#784212',   // 主要文字颜色
+    textSecondary: '#935116', // 次要文字颜色
+    hover: '#f5a76e',         // 悬停色
+    oddRow: '#ffefd5',        // 斑马纹
+    border: '#d35400',        // 边框色
+    shadow: '#e67e2233',      // 阴影颜色
+    tableHeaderText: '#ffffff' // 表头文字颜色
+  },
+  
+  // 商务灰色方案
+  grayTheme: {
+    primary: '#607d8b',       // 主色
+    secondary: '#b0bec5',     // 强调色
+    background: '#eceff1',    // 页面背景
+    paper: '#cfd8dc',         // 卡片背景
+    textPrimary: '#263238',   // 主要文字颜色
+    textSecondary: '#37474f', // 次要文字颜色
+    hover: '#90a4ae',         // 悬停色
+    oddRow: '#dde4e7',        // 斑马纹
+    border: '#455a64',        // 边框色
+    shadow: '#607d8b33',      // 阴影颜色
+    tableHeaderText: '#ffffff' // 表头文字颜色
+  },
+  
+  // 红色主题
+  redTheme: {
+    primary: '#c62828',       // 主色
+    secondary: '#ef9a9a',     // 强调色
+    background: '#ffebee',    // 页面背景
+    paper: '#ffcdd2',         // 卡片背景
+    textPrimary: '#b71c1c',   // 主要文字颜色
+    textSecondary: '#c62828', // 次要文字颜色
+    hover: '#ef5350',         // 悬停色
+    oddRow: '#ffdddd',        // 斑马纹
+    border: '#d32f2f',        // 边框色
+    shadow: '#c6282833',      // 阴影颜色
+    tableHeaderText: '#ffffff' // 表头文字颜色
+  },
+  
+  // 自定义主题（初始与默认主题相同，但会被用户修改）
+  customTheme: {
+    primary: '#aa96da',       // 主色（表头/强调元素）
+    secondary: '#fcbad3',     // 强调色（标签/按钮）
+    background: '#ffffd2',    // 页面背景
+    paper: '#a8d8ea',         // 卡片背景
+    textPrimary: '#5e548e',   // 主要文字颜色
+    textSecondary: '#6a5b8e', // 次要文字颜色
+    hover: '#ff9ebb',         // 悬停色
+    oddRow: '#f5f5c6',        // 斑马纹
+    border: '#8b7db3',        // 边框色
+    shadow: '#aa96da33',      // 阴影颜色
+    tableHeaderText: '#ffffd2' // 表头文字颜色
+  }
+};
+
+// 右侧悬浮主题菜单组件
+const FloatingThemeMenu = ({ onThemeChange, currentTheme, onCustomizeClick }) => {
+  const [isOpen, setIsOpen] = React.useState(false);
+  
+  const toggleMenu = () => {
+    setIsOpen(!isOpen);
+  };
+  
+  return (
+    <div style={{
+      position: 'fixed',
+      right: 0,
+      top: '50%',
+      transform: 'translateY(-50%)',
+      zIndex: 1000,
+      display: 'flex'
+    }}>
+      {/* 展开的菜单 */}
+      <div className="floating-menu" style={{
+        backgroundColor: '#ffffff',
+        borderRadius: '8px 0 0 8px',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+        padding: '15px',
+        transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+        maxHeight: '80vh',
+        overflowY: 'auto'
+      }}>
+        <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 'bold' }}>
+          选择主题
+        </Typography>
+        
+        {Object.keys(colorThemes).map((themeName) => (
+          <Chip
+            key={themeName}
+            label={themeName === 'default' ? '默认主题' : 
+                   themeName === 'blueTheme' ? '蓝色主题' : 
+                   themeName === 'greenTheme' ? '绿色主题' : 
+                   themeName === 'orangeTheme' ? '橙色主题' : 
+                   themeName === 'grayTheme' ? '灰色主题' :
+                   themeName === 'redTheme' ? '红色主题' : '自定义主题'}
+            onClick={() => {
+              onThemeChange(themeName);
+              setIsOpen(false);
+            }}
+            variant={currentTheme === themeName ? "filled" : "outlined"}
+            sx={{
+              mb: 1,
+              bgcolor: currentTheme === themeName ? colorThemes[themeName].primary : 'transparent',
+              color: currentTheme === themeName ? '#ffffff' : colorThemes[themeName].primary,
+              borderColor: colorThemes[themeName].primary+'!important',
+              fontWeight: '500',
+              '&:hover': {
+                bgcolor: colorThemes[themeName].hover+'!important',
+                color: '#ffffff'
+              }
+            }}
+          />
+        ))}
+        
+        <Button 
+          variant="contained" 
+          color="primary" 
+          onClick={() => {
+            onCustomizeClick();
+            setIsOpen(false);
+          }}
+          size="small"
+          sx={{ mt: 1 }}
+        >
+          自定义配色
+        </Button>
+      </div>
+      
+      {/* 触发按钮 */}
+      <div 
+        className="menu-trigger"
+        onClick={toggleMenu}
+        style={{
+          backgroundColor: colorThemes[currentTheme].primary,
+          borderRadius: '8px 0 0 8px',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+          padding: '12px 8px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer'
+        }}
+      >
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontWeight: 'bold',
+          color: colorThemes[currentTheme].tableHeaderText,
+          writingMode: 'vertical-rl',
+          textOrientation: 'mixed',
+          fontSize: '14px'
+        }}>
+          {isOpen ? '收起 ◄' : '主题 ►'}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// 自定义颜色选择器组件
+const ColorPickerDialog = ({ open, onClose, colorConfig, onSave }) => {
+  const [customColors, setCustomColors] = React.useState({...colorConfig});
+  
+  const handleColorChange = (key, value) => {
+    setCustomColors({
+      ...customColors,
+      [key]: value
+    });
+  };
+  
+  const handleSave = () => {
+    // 自动计算阴影颜色（添加33透明度）
+    const shadowColor = customColors.primary + '33';
+    onSave({...customColors, shadow: shadowColor});
+    onClose();
+  };
+  
+  // 颜色说明文本
+  const colorDescriptions = {
+    primary: "主色（表头/强调元素）",
+    secondary: "强调色（标签/按钮）",
+    background: "页面背景",
+    paper: "卡片背景",
+    textPrimary: "主要文字颜色",
+    textSecondary: "次要文字颜色",
+    hover: "悬停色",
+    oddRow: "斑马纹",
+    border: "边框色",
+    tableHeaderText: "表头文字颜色"
+  };
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <DialogTitle>自定义配色方案</DialogTitle>
+      <DialogContent>
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="subtitle1" gutterBottom>
+            基础颜色
+          </Typography>
+          <div className="color-picker-group">
+            {['primary', 'secondary', 'background', 'paper'].map(key => (
+              <div key={key} className="color-picker-item">
+                <span className="color-picker-label">{colorDescriptions[key]}</span>
+                <TextField 
+                  type="color" 
+                  value={customColors[key]} 
+                  onChange={(e) => handleColorChange(key, e.target.value)}
+                  size="small"
+                  sx={{ width: '100px' }}
+                />
+              </div>
+            ))}
+          </div>
+          
+          <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
+            文字颜色
+          </Typography>
+          <div className="color-picker-group">
+            {['textPrimary', 'textSecondary', 'tableHeaderText'].map(key => (
+              <div key={key} className="color-picker-item">
+                <span className="color-picker-label">{colorDescriptions[key]}</span>
+                <TextField 
+                  type="color" 
+                  value={customColors[key]} 
+                  onChange={(e) => handleColorChange(key, e.target.value)}
+                  size="small"
+                  sx={{ width: '100px' }}
+                />
+              </div>
+            ))}
+          </div>
+          
+          <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
+            交互和边框
+          </Typography>
+          <div className="color-picker-group">
+            {['hover', 'oddRow', 'border'].map(key => (
+              <div key={key} className="color-picker-item">
+                <span className="color-picker-label">{colorDescriptions[key]}</span>
+                <TextField 
+                  type="color" 
+                  value={customColors[key]} 
+                  onChange={(e) => handleColorChange(key, e.target.value)}
+                  size="small"
+                  sx={{ width: '100px' }}
+                />
+              </div>
+            ))}
+          </div>
+          
+          <Accordion sx={{ mt: 2 }}>
+            <AccordionSummary>
+              <Typography>预览效果</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <div style={{ 
+                padding: '10px', 
+                backgroundColor: customColors.background,
+                borderRadius: '8px',
+                border: `1px solid ${customColors.border}`
+              }}>
+                <div style={{ 
+                  backgroundColor: customColors.primary,
+                  color: customColors.tableHeaderText,
+                  padding: '10px',
+                  fontWeight: 'bold',
+                  borderRadius: '4px 4px 0 0'
+                }}>
+                  表头示例
+                </div>
+                <div style={{ 
+                  backgroundColor: customColors.background,
+                  color: customColors.textPrimary,
+                  padding: '10px',
+                  borderLeft: `1px solid ${customColors.border}`,
+                  borderRight: `1px solid ${customColors.border}`
+                }}>
+                  正常行内容
+                </div>
+                <div style={{ 
+                  backgroundColor: customColors.oddRow,
+                  color: customColors.textSecondary,
+                  padding: '10px',
+                  borderLeft: `1px solid ${customColors.border}`,
+                  borderRight: `1px solid ${customColors.border}`,
+                  borderBottom: `1px solid ${customColors.border}`
+                }}>
+                  奇数行内容
+                </div>
+                <div style={{ 
+                  marginTop: '10px',
+                  display: 'inline-block',
+                  backgroundColor: customColors.secondary,
+                  color: customColors.textPrimary,
+                  padding: '4px 8px',
+                  borderRadius: '16px',
+                  fontSize: '14px'
+                }}>
+                  标签示例
+                </div>
+              </div>
+            </AccordionDetails>
+          </Accordion>
+        </Box>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>取消</Button>
+        <Button onClick={handleSave} variant="contained" color="primary">保存</Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+// 事件表单对话框组件
+const EventFormDialog = ({ open, onClose, onSave, eventData, allTags, mode }) => {
+  const [formData, setFormData] = React.useState({
+    id: '',
+    date: '',
+    event: '',
+    tags: []
+  });
+  
+  // 当被编辑的事件数据变化时更新表单
+  React.useEffect(() => {
+    if (eventData && mode === 'edit') {
+      setFormData({
+        id: eventData.id || '',
+        date: eventData.date || '',
+        event: eventData.event || '',
+        tags: eventData.tags || []
+      });
+    } else if (mode === 'add') {
+      setFormData({
+        id: '',
+        date: '',
+        event: '',
+        tags: []
+      });
+    }
+  }, [eventData, mode, open]);
+  
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value
+    });
+  };
+  
+  const handleTagsChange = (event, newValue) => {
+    setFormData({
+      ...formData,
+      tags: newValue
+    });
+  };
+  
+  const handleSubmit = () => {
+    // 表单验证
+    if (!formData.date || !formData.event || formData.tags.length === 0) {
+      alert('请填写所有必填字段');
+      return;
+    }
+    
+    // 如果是添加模式，生成ID
+    const submitData = {
+      ...formData,
+      id: mode === 'add' ? window.uuidv4() : formData.id
+    };
+    
+    onSave(submitData, mode);
+    onClose();
+  };
+  
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <DialogTitle>{mode === 'add' ? '添加新事件' : '编辑事件'}</DialogTitle>
+      <DialogContent>
+        <Box sx={{ mt: 2 }}>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={4}>
+              <TextField
+                label="日期"
+                name="date"
+                value={formData.date}
+                onChange={handleInputChange}
+                fullWidth
+                margin="normal"
+                placeholder="例如：4月1日"
+                required
+              />
+            </Grid>
+            <Grid item xs={12} md={8}>
+              <TextField
+                label="事件"
+                name="event"
+                value={formData.event}
+                onChange={handleInputChange}
+                fullWidth
+                margin="normal"
+                placeholder="例如：北京市自动驾驶汽车条例施行"
+                required
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <Autocomplete
+                multiple
+                options={allTags}
+                value={formData.tags}
+                onChange={handleTagsChange}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="相关板块"
+                    placeholder="选择或输入新标签"
+                    required
+                  />
+                )}
+                renderTags={(value, getTagProps) =>
+                  value.map((option, index) => (
+                    <Chip
+                      label={option}
+                      {...getTagProps({ index })}
+                    />
+                  ))
+                }
+                freeSolo
+                sx={{ mt: 2 }}
+              />
+            </Grid>
+          </Grid>
+        </Box>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>取消</Button>
+        <Button onClick={handleSubmit} variant="contained" color="primary">
+          {mode === 'add' ? '添加' : '保存'}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+// 确认删除对话框组件
+const ConfirmDeleteDialog = ({ open, onClose, onConfirm, eventName }) => {
+  return (
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle>确认删除</DialogTitle>
+      <DialogContent>
+        <Typography variant="body1">
+          您确定要删除事件 "{eventName}" 吗？此操作无法撤销。
+        </Typography>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>取消</Button>
+        <Button onClick={onConfirm} color="error" variant="contained">
+          删除
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+// 导入/导出对话框组件
+const ImportExportDialog = ({ open, onClose, onImport, onExport }) => {
+  const [jsonData, setJsonData] = React.useState('');
+  const [operation, setOperation] = React.useState('export'); // 'import' or 'export'
+  
+  React.useEffect(() => {
+    if (open && operation === 'export') {
+      onExport(data => {
+        setJsonData(JSON.stringify(data, null, 2));
+      });
+    }
+  }, [open, operation, onExport]);
+  
+  const handleImport = () => {
+    try {
+      const data = JSON.parse(jsonData);
+      if (!Array.isArray(data)) {
+        throw new Error('数据必须是数组格式');
+      }
+      
+      onImport(data);
+      onClose();
+    } catch (error) {
+      alert(`导入失败: ${error.message}`);
+    }
+  };
+  
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <DialogTitle>
+        {operation === 'import' ? '导入数据' : '导出数据'}
+      </DialogTitle>
+      <DialogContent>
+        <Box sx={{ mt: 2 }}>
+          <Box sx={{ mb: 2 }}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={operation === 'export'}
+                  onChange={() => setOperation(operation === 'import' ? 'export' : 'import')}
+                />
+              }
+              label={operation === 'import' ? '切换到导出' : '切换到导入'}
+            />
+          </Box>
+          
+          <TextField
+            label="JSON数据"
+            multiline
+            rows={10}
+            value={jsonData}
+            onChange={(e) => setJsonData(e.target.value)}
+            fullWidth
+            placeholder={operation === 'import' ? '粘贴JSON数据以导入' : '复制此数据以备份'}
+          />
+          
+          {operation === 'import' && (
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+              注意：导入操作将覆盖当前所有数据，请确保备份
+            </Typography>
+          )}
+        </Box>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>取消</Button>
+        {operation === 'import' && (
+          <Button onClick={handleImport} variant="contained" color="primary">
+            导入
+          </Button>
+        )}
+        {operation === 'export' && (
+          <Button 
+            onClick={() => {
+              navigator.clipboard.writeText(jsonData);
+              alert('数据已复制到剪贴板');
+            }} 
+            variant="contained" 
+            color="primary"
+          >
+            复制到剪贴板
+          </Button>
+        )}
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+// 应用主组件
+class App extends React.Component {
+  constructor(props) {
+    super(props);
+    
+    // 从localStorage加载自定义主题（如果有）
+    let savedCustomTheme;
+    try {
+      savedCustomTheme = JSON.parse(localStorage.getItem('customTheme'));
+    } catch (e) {
+      savedCustomTheme = null;
+    }
+    
+    // 用保存的自定义主题更新colorThemes对象
+    if (savedCustomTheme) {
+      colorThemes.customTheme = savedCustomTheme;
+    }
+    
+    // 从localStorage加载事件数据（如果有）
+    let savedEvents;
+    try {
+      savedEvents = JSON.parse(localStorage.getItem('eventsData'));
+    } catch (e) {
+      savedEvents = null;
+    }
+    
+    // 初始事件数据
+    const defaultEvents = [
+      { id: window.uuidv4(), date: '4月1日', event: '北京市自动驾驶汽车条例施行', tags: ['自动驾驶'] },
+      { id: window.uuidv4(), date: '4月1日', event: '上海充电设备补贴政策', tags: ['充电桩'] },
+      { id: window.uuidv4(), date: '4月1日', event: '闪迪存储芯片涨价', tags: ['存储芯片'] },
+      { id: window.uuidv4(), date: '4月1日', event: '文心一言全面免费', tags: ['AI人工智能', '大模型'] },
+      { id: window.uuidv4(), date: '4月1-3日', event: '光网络与通信研讨会（OFC）', tags: ['光通信'] },
+      { id: window.uuidv4(), date: '4月1-2日', event: '中国生成式AI大会', tags: ['AI人工智能'] },
+      { id: window.uuidv4(), date: '4月1日', event: '钛白粉提价', tags: ['钛白粉', '化工行业'] },
+      { id: window.uuidv4(), date: '4月1日', event: '水下机器人标准实施', tags: ['深海科技'] },
+      { id: window.uuidv4(), date: '4月2日', event: '任天堂Switch 2直面会', tags: ['游戏', '消费电子'] }
+    ];
+    
+    this.state = {
+      currentTheme: 'default',
+      isCustomizeDialogOpen: false,
+      events: savedEvents || defaultEvents,
+      searchTerm: '',
+      selectedTags: [],
+      isEventFormOpen: false,
+      currentEvent: null,
+      formMode: 'add', // 'add' or 'edit'
+      isDeleteDialogOpen: false,
+      eventToDelete: null,
+      isImportExportDialogOpen: false,
+      notification: {
+        open: false,
+        message: '',
+        severity: 'success'
+      }
+    };
+  }
+  
+  // 保存事件数据到localStorage
+  saveEventsToStorage = () => {
+    localStorage.setItem('eventsData', JSON.stringify(this.state.events));
+  };
+
+  // 主题相关方法
+  handleThemeChange = (themeName) => {
+    this.setState({ currentTheme: themeName });
+  };
+  
+  handleCustomizeClick = () => {
+    this.setState({ isCustomizeDialogOpen: true });
+  };
+  
+  handleCustomizeClose = () => {
+    this.setState({ isCustomizeDialogOpen: false });
+  };
+  
+ handleCustomThemeSave = (newCustomTheme) => {
+    // 更新自定义主题
+    colorThemes.customTheme = newCustomTheme;
+    
+    // 保存到本地存储
+    localStorage.setItem('customTheme', JSON.stringify(newCustomTheme));
+    
+    // 切换到自定义主题
+    this.setState({ 
+      currentTheme: 'customTheme',
+      isCustomizeDialogOpen: false 
+    });
+    
+    // 显示通知
+    this.showNotification('自定义主题已保存', 'success');
+  };
+  
+  // 事件操作相关方法
+  handleAddClick = () => {
+    this.setState({
+      isEventFormOpen: true,
+      currentEvent: null,
+      formMode: 'add'
+    });
+  };
+  
+  handleEditClick = (event) => {
+    this.setState({
+      isEventFormOpen: true,
+      currentEvent: event,
+      formMode: 'edit'
+    });
+  };
+  
+  handleDeleteClick = (event) => {
+    this.setState({
+      isDeleteDialogOpen: true,
+      eventToDelete: event
+    });
+  };
+  
+  handleEventFormClose = () => {
+    this.setState({
+      isEventFormOpen: false,
+      currentEvent: null
+    });
+  };
+  
+  handleDeleteDialogClose = () => {
+    this.setState({
+      isDeleteDialogOpen: false,
+      eventToDelete: null
+    });
+  };
+  
+  handleSaveEvent = (eventData, mode) => {
+    let updatedEvents;
+    
+    if (mode === 'add') {
+      updatedEvents = [...this.state.events, eventData];
+      this.showNotification('事件已添加', 'success');
+    } else {
+      updatedEvents = this.state.events.map(event => 
+        event.id === eventData.id ? eventData : event
+      );
+      this.showNotification('事件已更新', 'success');
+    }
+    
+    this.setState({ events: updatedEvents }, () => {
+      this.saveEventsToStorage();
+    });
+  };
+  
+  handleConfirmDelete = () => {
+    const updatedEvents = this.state.events.filter(
+      event => event.id !== this.state.eventToDelete.id
+    );
+    
+    this.setState({
+      events: updatedEvents,
+      isDeleteDialogOpen: false,
+      eventToDelete: null
+    }, () => {
+      this.saveEventsToStorage();
+      this.showNotification('事件已删除', 'success');
+    });
+  };
+  
+  // 搜索和筛选方法
+  handleSearchChange = (e) => {
+    this.setState({ searchTerm: e.target.value });
+  };
+  
+  handleTagSelect = (tag) => {
+    const { selectedTags } = this.state;
+    if (selectedTags.includes(tag)) {
+      this.setState({
+        selectedTags: selectedTags.filter(t => t !== tag)
+      });
+    } else {
+      this.setState({
+        selectedTags: [...selectedTags, tag]
+      });
+    }
+  };
+  
+  handleClearFilters = () => {
+    this.setState({
+      searchTerm: '',
+      selectedTags: []
+    });
+  };
+  
+  // 导入/导出方法
+  handleImportExportClick = () => {
+    this.setState({ isImportExportDialogOpen: true });
+  };
+  
+  handleImportExportClose = () => {
+    this.setState({ isImportExportDialogOpen: false });
+  };
+  
+  handleExport = (callback) => {
+    callback(this.state.events);
+  };
+  
+  handleImport = (data) => {
+    this.setState({ events: data }, () => {
+      this.saveEventsToStorage();
+      this.showNotification('数据导入成功', 'success');
+    });
+  };
+  
+  // 通知相关方法
+  showNotification = (message, severity) => {
+    this.setState({
+      notification: {
+        open: true,
+        message,
+        severity
+      }
+    });
+  };
+  
+  handleCloseNotification = () => {
+    this.setState({
+      notification: {
+        ...this.state.notification,
+        open: false
+      }
+    });
+  };
+  
+  render() {
+    const { 
+      currentTheme, events, searchTerm, selectedTags, 
+      isEventFormOpen, currentEvent, formMode,
+      isDeleteDialogOpen, eventToDelete, isImportExportDialogOpen,
+      notification, isCustomizeDialogOpen
+    } = this.state;
+    
+    const theme = createTheme({
+      palette: {
+        primary: {
+          main: colorThemes[currentTheme].primary,
+        },
+        secondary: {
+          main: colorThemes[currentTheme].secondary,
+        },
+        background: {
+          default: colorThemes[currentTheme].background,
+          paper: colorThemes[currentTheme].paper,
+        },
+        text: {
+          primary: colorThemes[currentTheme].textPrimary,
+          secondary: colorThemes[currentTheme].textSecondary,
+        },
+      },
+      components: {
+        MuiPaper: {
+          styleOverrides: {
+            root: {
+              backgroundColor: colorThemes[currentTheme].paper,
+              boxShadow: `0 4px 8px ${colorThemes[currentTheme].shadow}`,
+            },
+          },
+        }, 
+        MuiTableRow: {
+          styleOverrides: {
+            root: { 
+			  '&.MuiTableCell-head': {
+				'&:nth-of-type(odd)': {
+				  backgroundColor: colorThemes[currentTheme].oddRow,
+				  }
+			  },
+			   
+              '&:hover': {
+                backgroundColor: `${colorThemes[currentTheme].hover}33 !important`,
+              },
+            },
+          },
+        },
+		  MuiTableHead: {
+			styleOverrides: {
+				root: {
+				 backgroundColor: (theme) => theme.palette.primary.main, // 移除错误拼接
+				'&': { // 使用模板字符串正确添加!important
+					backgroundColor: `${colorThemes[currentTheme].primary} !important`,
+              },
+            },
+
+          },
+        },
+        MuiTableCell: {
+          styleOverrides: {
+            head: {
+              color: colorThemes[currentTheme].tableHeaderText,
+              fontWeight: 'bold',
+			   // 移除可能导致背景覆盖的样式
+			  '&:hover': { // 防止悬停覆盖
+				backgroundColor: 'inherit !important',
+          },
+            },
+            root: {
+              borderBottom: `1px solid ${colorThemes[currentTheme].border}33`, 
+            },
+          },
+        },
+        MuiButton: {
+          styleOverrides: {
+            root: {
+              textTransform: 'none',
+            },
+          },
+        },
+        MuiChip: {
+          styleOverrides: {
+            root: {
+              backgroundColor: colorThemes[currentTheme].secondary,
+              '&.MuiTableBody-root:hover': {
+                backgroundColor: colorThemes[currentTheme].hover +'!important',
+              },
+            },
+          },
+        },
+      },
+    });
+    
+    // 处理筛选
+    let filteredEvents = events;
+    
+    // 根据搜索词筛选
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filteredEvents = filteredEvents.filter(event => 
+        event.event.toLowerCase().includes(term) || 
+        event.date.toLowerCase().includes(term)
+      );
+    }
+    
+    // 根据选中的标签筛选
+    if (selectedTags.length > 0) {
+      filteredEvents = filteredEvents.filter(event =>
+        selectedTags.every(tag => event.tags.includes(tag))
+      );
+    }
+    
+    // 获取所有唯一的标签
+    const allTags = [...new Set(events.flatMap(event => event.tags))].sort();
+    
+    return (
+      <ThemeProvider theme={theme}>
+        <div style={{ 
+          backgroundColor: colorThemes[currentTheme].background,
+          minHeight: '100vh',
+          transition: 'background-color 0.3s ease'
+        }}>
+          <div className="container">
+            <Typography 
+              variant="h4" 
+              component="h1"
+              gutterBottom
+              sx={{ 
+                color: colorThemes[currentTheme].textPrimary,
+                borderBottom: `3px solid ${colorThemes[currentTheme].primary}`,
+                paddingBottom: '8px',
+                mb: 3,
+                fontWeight: 'bold'
+              }}
+            >
+              2025年4月财经事件与影响板块
+            </Typography>
+            
+            {/* 操作区域 */}
+            <Box sx={{ mb: 3 }}>
+              <Grid container spacing={2} alignItems="center">
+                <Grid item xs={12} md={6}>
+                  <div className="search-bar">
+                    <TextField
+                      placeholder="搜索事件或日期..."
+                      value={searchTerm}
+                      onChange={this.handleSearchChange}
+                      variant="outlined"
+                      size="small"
+                      fullWidth
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            🔍
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                    <Button
+                      variant="outlined"
+                      size="medium"
+                      onClick={this.handleClearFilters}
+                      disabled={!searchTerm && selectedTags.length === 0}
+                    >
+                      清除筛选
+                    </Button>
+                  </div>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <div className="action-buttons" style={{ justifyContent: 'flex-end' }}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={this.handleAddClick}
+                      sx={{ fontWeight: 'medium' }}
+                    >
+                      添加事件
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      onClick={this.handleImportExportClick}
+                    >
+                      导入/导出
+                    </Button>
+                  </div>
+                </Grid>
+              </Grid>
+              
+              {/* 标签筛选区 */}
+              {allTags.length > 0 && (
+                <Paper 
+                  elevation={1} 
+                  sx={{ 
+                    p: 2, 
+                    mt: 2, 
+                    border: `1px solid ${colorThemes[currentTheme].border}33`
+                  }}
+                >
+                  <Typography 
+                    variant="subtitle1" 
+                    component="h2"
+                    gutterBottom
+                    sx={{ fontWeight: 'medium' }}
+                  >
+                    按板块筛选:
+                  </Typography>
+                  <div className="chip-group">
+                    {allTags.map(tag => (
+                      <Chip
+                        key={tag}
+                        label={tag}
+                        onClick={() => this.handleTagSelect(tag)}
+                        variant={selectedTags.includes(tag) ? "filled" : "outlined"}
+                        sx={{
+                          bgcolor: selectedTags.includes(tag) ? colorThemes[currentTheme].primary : 'transparent',
+                          color: selectedTags.includes(tag) ? '#ffffff' : colorThemes[currentTheme].primary,
+                          borderColor: colorThemes[currentTheme].primary
+                          ,'&:hover': {
+                            bgcolor: colorThemes[currentTheme].hover ,
+                            color: '#ffffff'
+                          }
+                        }}
+                      />
+                    ))}
+                  </div>
+                </Paper>
+              )}
+            </Box>
+            
+            {/* 事件表格 */}
+            <TableContainer 
+              component={Paper} 
+              sx={{ 
+                borderRadius: '8px',
+                overflow: 'hidden',
+                mb: 4
+              }}
+            >
+              <Table sx={{ minWidth: 650 }}>
+                <TableHead>
+                  <TableRow>
+                    <TableCell width="15%">日期</TableCell>
+                    <TableCell width="40%">事件</TableCell>
+                    <TableCell width="30%">相关板块</TableCell>
+                    <TableCell width="15%" align="center">操作</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {filteredEvents.length > 0 ? (
+                    filteredEvents.map((event) => (
+                      <TableRow key={event.id}>
+                        <TableCell 
+                          component="th" 
+                          scope="row"
+                          sx={{ fontWeight: 'medium' }}
+                        >
+                          {event.date}
+                        </TableCell>
+                        <TableCell>{event.event}</TableCell>
+                        <TableCell>
+                          <div className="chip-group">
+                            {event.tags.map(tag => (
+                              <Chip 
+                                key={tag} 
+                                label={tag} 
+                                size="small" 
+                                onClick={() => this.handleTagSelect(tag)}
+                                sx={{
+                                  bgcolor: colorThemes[currentTheme].secondary,
+                                  color: colorThemes[currentTheme].textPrimary,
+                                  '&:hover': {
+                                    bgcolor: colorThemes[currentTheme].hover,
+                                    color: '#ffffff'
+                                  }
+                                }}
+                              />
+                            ))}
+                          </div>
+                        </TableCell>
+                        <TableCell align="center">
+                          <IconButton 
+                            size="small" 
+                            onClick={() => this.handleEditClick(event)}
+                            sx={{ color: colorThemes[currentTheme].primary }}
+                          >
+                            ✏️
+                          </IconButton>
+                          <IconButton 
+                            size="small" 
+                            onClick={() => this.handleDeleteClick(event)}
+                            sx={{ color: theme.palette.error.main }}
+                          >
+                            🗑️
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={4} align="center">
+                        <Typography sx={{ py: 2 }}>
+                          没有找到符合条件的事件
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            
+            {/* 统计卡片区 */}
+            <Box sx={{ mb: 4 }}>
+              <Typography 
+                variant="h5" 
+                component="h2"
+                gutterBottom
+                sx={{ 
+                  color: colorThemes[currentTheme].textPrimary,
+                  borderBottom: `2px solid ${colorThemes[currentTheme].primary}`,
+                  paddingBottom: '8px',
+                  mb: 2
+                }}
+              >
+                数据统计
+              </Typography>
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={4}>
+                  <Card sx={{ height: '100%' }}>
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom>
+                        总事件数
+                      </Typography>
+                      <Typography variant="h3" color="primary" sx={{ fontWeight: 'bold' }}>
+                        {events.length}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <Card sx={{ height: '100%' }}>
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom>
+                        板块数量
+                      </Typography>
+                      <Typography variant="h3" color="primary" sx={{ fontWeight: 'bold' }}>
+                        {allTags.length}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <Card sx={{ height: '100%' }}>
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom>
+                        热门板块
+                      </Typography>
+                      {allTags.length > 0 ? (
+                        <>
+                          <Typography variant="body1" sx={{ mb: 1 }}>
+                            {(() => {
+                              // 计算每个标签出现的次数
+                              const tagCounts = {};
+                              events.forEach(event => {
+                                event.tags.forEach(tag => {
+                                  tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+                                });
+                              });
+                              
+                              // 找出出现次数最多的标签
+                              const sortedTags = Object.entries(tagCounts)
+                                .sort((a, b) => b[1] - a[1])
+                                .slice(0, 3);
+                              
+                              return sortedTags[0] ? sortedTags[0][0] : '无数据';
+                            })()}
+                          </Typography>
+                          <div className="chip-group">
+                            {(() => {
+                              // 计算每个标签出现的次数
+                              const tagCounts = {};
+                              events.forEach(event => {
+                                event.tags.forEach(tag => {
+                                  tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+                                });
+                              });
+                              
+                              // 找出出现次数最多的标签
+                              const sortedTags = Object.entries(tagCounts)
+                                .sort((a, b) => b[1] - a[1])
+                                .slice(0, 3);
+                              
+                              return sortedTags.map(([tag, count]) => (
+                                <Chip 
+                                  key={tag} 
+                                  label={`${tag} (${count})`}
+                                  size="small"
+                                  onClick={() => this.handleTagSelect(tag)}
+                                  sx={{
+                                    bgcolor: colorThemes[currentTheme].secondary,
+                                    color: colorThemes[currentTheme].textPrimary,
+                                   
+                                  }}
+                                />
+                              ));
+                            })()}
+                          </div>
+                        </>
+                      ) : (
+                        <Typography variant="body1">
+                          无数据
+                        </Typography>
+                      )}
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </Grid>
+            </Box>
+            
+            {/* 页脚 */}
+            <Box sx={{ 
+              py: 3, 
+              textAlign: 'center',
+              borderTop: `1px solid ${colorThemes[currentTheme].border}33`,
+              mt: 'auto'
+            }}>
+              <Typography variant="body2" color="text.secondary">
+                2025年4月财经事件日历 - 数据更新于: {new Date().toLocaleDateString()}
+              </Typography>
+            </Box>
+          </div>
+        </div>
+        
+        {/* 右侧主题菜单 */}
+        <FloatingThemeMenu
+          onThemeChange={this.handleThemeChange}
+          currentTheme={currentTheme}
+          onCustomizeClick={this.handleCustomizeClick}
+        />
+        
+        {/* 对话框组件 */}
+        <ColorPickerDialog
+          open={isCustomizeDialogOpen}
+          onClose={this.handleCustomizeClose}
+          colorConfig={colorThemes.customTheme}
+          onSave={this.handleCustomThemeSave}
+        />
+        
+        <EventFormDialog
+          open={isEventFormOpen}
+          onClose={this.handleEventFormClose}
+          onSave={this.handleSaveEvent}
+          eventData={currentEvent}
+          allTags={allTags}
+          mode={formMode}
+        />
+        
+        <ConfirmDeleteDialog
+          open={isDeleteDialogOpen}
+          onClose={this.handleDeleteDialogClose}
+          onConfirm={this.handleConfirmDelete}
+          eventName={eventToDelete ? eventToDelete.event : ''}
+        />
+        
+        <ImportExportDialog
+          open={isImportExportDialogOpen}
+          onClose={this.handleImportExportClose}
+          onImport={this.handleImport}
+          onExport={this.handleExport}
+        />
+        
+        {/* 通知提示 */}
+        <Snackbar
+          open={notification.open}
+          autoHideDuration={4000}
+          onClose={this.handleCloseNotification}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert 
+            onClose={this.handleCloseNotification} 
+            severity={notification.severity} 
+            sx={{ width: '100%' }}
+          >
+            {notification.message}
+          </Alert>
+        </Snackbar>
+      </ThemeProvider>
+    );
+  }
+}
+
+ReactDOM.render(<App />, document.getElementById('root'));
+</script>
+
+</body>
+</html>

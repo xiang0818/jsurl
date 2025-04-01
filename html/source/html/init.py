@@ -306,6 +306,7 @@ def generate_index_html(directory):
     .content-area {{
         position: relative;
         background: var(--bg-color);
+		height: 100%;
     }}
 
     iframe {{
@@ -313,6 +314,10 @@ def generate_index_html(directory):
         height: 100%;
         border: none;
         background: transparent;
+		display: block; 
+		/* 新增防抖属性 */
+		contain: strict; /* 隔离布局计算 */
+		will-change: transform; /* 优化渲染性能 */
     }}
 
     .default-content {{

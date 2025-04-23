@@ -1,5 +1,6 @@
 @echo off
 chcp 65001 > nul
+echo.
 title 自动生成导航页
 color 0B
 

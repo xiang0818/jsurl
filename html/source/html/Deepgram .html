@@ -1,0 +1,1591 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deepgram 语音转文本 (增强版)</title>
+    <style>
+        :root {
+            --sidebar-width: 340px;
+            --transition-speed: 0.3s;
+            
+            /* 新的配色方案 */
+            --primary-color: #3b82f6; /* 蓝色调整为更现代的蓝色 */
+            --primary-hover-color: #2563eb;
+            --primary-light-color: #dbeafe; /* 用于背景色等较轻的场合 */
+            --secondary-color: #64748b; /* 更柔和的辅助色 */
+            --secondary-hover-color: #475569;
+            --danger-color: #ef4444; /* 改为更明亮的红色 */
+            --danger-hover-color: #dc2626;
+            --success-color: #22c55e; /* 添加成功色 */
+            --success-hover-color: #16a34a;
+            --warning-color: #f59e0b; /* 添加警告色 */
+            
+            --light-bg: #f8fafc; /* 更淡的背景色 */
+            --border-color: #e2e8f0; /* 更柔和的边框色 */
+            --text-color: #334155; /* 不使用纯黑，使用深灰色 */
+            --muted-text-color: #64748b;
+            
+            --box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --border-radius: 8px; /* 稍微大一点的圆角 */
+            --button-border-radius: 6px;
+            --input-border-radius: 6px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-color: #fff;
+            color: var(--text-color);
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        /* --- Sidebar --- */
+        #sidebar {
+            width: var(--sidebar-width);
+            padding: 25px;
+            background-color: var(--light-bg);
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            flex-shrink: 0;
+            transition: all var(--transition-speed) ease;
+            position: relative;
+            opacity: 1;
+            box-sizing: border-box;
+        }
+
+        #sidebar.collapsed {
+            width: 0;
+            padding-left: 0;
+            padding-right: 0;
+            border-right-width: 0;
+            opacity: 0;
+            overflow: hidden;
+        }
+
+        #sidebar h1 {
+             font-size: 1.5em;
+             margin-bottom: 25px;
+             color: var(--primary-color);
+             border-bottom: 1px solid var(--border-color);
+             padding-bottom: 10px;
+        }
+
+        /* --- Main Content --- */
+        #main-content {
+            flex-grow: 1;
+            padding: 30px;
+            padding-left: 40px;
+            overflow-y: auto;
+            box-sizing: border-box;
+            max-width: 1200px; /* 限制最大宽度，提升可读性 */
+            margin: 0 auto; /* 在大屏幕上居中 */
+        }
+        
+        #main-content h1 {
+             font-size: 1.8em;
+             margin-bottom: 25px;
+             color: var(--text-color);
+             display: flex;
+             align-items: center;
+        }
+        
+        #main-content h1::before {
+            content: "";
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%233b82f6'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v3a3 3 0 01-3 3z'%3E%3C/path%3E%3C/svg%3E");
+            background-size: contain;
+            margin-right: 12px;
+        }
+
+        /* --- Sidebar Toggle Button --- */
+        #sidebar-toggle-btn {
+            position: fixed;
+            top: 15px;
+            left: var(--sidebar-width);
+            transform: translateX(-100%);
+            padding: 15px 8px;
+            z-index: 1050;
+            width: 32px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 0 var(--button-border-radius) var(--button-border-radius) 0;
+            cursor: pointer;
+            font-size: 1em;
+            line-height: 1;
+            text-align: center;
+            opacity: 0.9;
+            transition: all var(--transition-speed) ease;
+            box-shadow: var(--box-shadow);
+        }
+        
+        #sidebar-toggle-btn:hover {
+            opacity: 1;
+            background-color: var(--primary-hover-color);
+        }
+        
+        #sidebar.collapsed + #main-content #sidebar-toggle-btn {
+            left: 0;
+            transform: translateX(0);
+            border-radius: var(--button-border-radius) 0 0 var(--button-border-radius);
+        }
+
+        /* --- General Form Elements --- */
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.95em;
+            color: var(--text-color);
+        }
+
+        input[type="text"], input[type="url"], select, textarea, input[type="file"] {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--input-border-radius);
+            box-sizing: border-box;
+            font-size: 1em;
+            transition: all 0.2s ease;
+            background-color: #fff;
+            color: var(--text-color);
+        }
+        
+        input[type="text"]:focus, input[type="url"]:focus, select:focus, textarea:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+            outline: none;
+        }
+        
+        input[type="file"] {
+            padding: 10px;
+            background-color: #fff;
+            cursor: pointer;
+        }
+        
+        input[type="file"]::file-selector-button {
+            padding: 8px 12px;
+            border-radius: var(--button-border-radius);
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-right: 10px;
+            transition: background-color 0.2s ease;
+        }
+        
+        input[type="file"]::file-selector-button:hover {
+            background-color: var(--secondary-hover-color);
+        }
+        
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+            line-height: 1.5;
+            font-family: inherit;
+        }
+
+        /* --- Buttons --- */
+        button {
+            padding: 12px 16px;
+            border: none;
+            border-radius: var(--button-border-radius);
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        button:hover:not(:disabled) {
+            box-shadow: 0 4px 6px rgba(0,0,0,0.12);
+            transform: translateY(-1px);
+        }
+        
+        button:active:not(:disabled) {
+            transform: translateY(0);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        button:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Primary Action Button */
+        #transcribe-button {
+            background-color: var(--primary-color);
+            color: white;
+            width: 100%;
+            margin-top: 15px;
+            padding: 14px;
+            font-size: 1.1em;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #transcribe-button::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 20px;
+            width: 24px;
+            height: 24px;
+            margin-top: -12px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M15 12a3 3 0 11-6 0 3 3 0 016 0z'%3E%3C/path%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 008 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H2a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 003.6 8a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H8a1.65 1.65 0 001-1.51V2a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V8a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z'%3E%3C/path%3E%3C/svg%3E");
+            background-size: contain;
+            opacity: 0.9;
+        }
+        
+        #transcribe-button:hover:not(:disabled) {
+            background-color: var(--primary-hover-color);
+        }
+        
+        /* Loading spinner for transcribe button */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        #transcribe-button.loading::after {
+            content: "";
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            margin-left: 10px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            display: inline-block;
+        }
+
+        /* Sidebar Buttons */
+        .management-section button {
+            background-color: var(--secondary-color);
+            color: white;
+            margin-right: 6px;
+            margin-top: 6px;
+            padding: 10px 14px;
+            font-size: 0.95em;
+        }
+        
+        .management-section button:hover:not(:disabled) {
+            background-color: var(--secondary-hover-color);
+        }
+
+        /* Delete Buttons */
+        .item-actions button {
+            background-color: var(--danger-color);
+            color: white;
+            padding: 6px 10px;
+            font-size: 0.85em;
+            margin-left: 10px;
+            box-shadow: none;
+            border-radius: 4px;
+        }
+        
+        .item-actions button:hover {
+            background-color: var(--danger-hover-color);
+        }
+
+        /* --- Management Sections --- */
+        .management-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background-color: #fff;
+            box-shadow: var(--box-shadow);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .management-section:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .management-section h3 {
+            font-size: 1.2em;
+            margin-top: 0;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+        }
+        
+        .management-section h3::before {
+            content: "";
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+        
+        #api-key-manager h3::before {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%233b82f6'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z'%3E%3C/path%3E%3C/svg%3E");
+        }
+        
+        #model-manager h3::before {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%233b82f6'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z'%3E%3C/path%3E%3C/svg%3E");
+        }
+        
+        .management-actions {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .management-actions button {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .management-actions button::before {
+            content: "";
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            margin-right: 6px;
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+        
+        button[onclick*="triggerImport"]::before {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12'%3E%3C/path%3E%3C/svg%3E");
+        }
+        
+        button[onclick*="exportData"]::before {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4'%3E%3C/path%3E%3C/svg%3E");
+        }
+
+        /* --- Item List Styling --- */
+        .item-list {
+            margin-top: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: var(--input-border-radius);
+            padding: 5px;
+            background-color: #fff;
+            scrollbar-width: thin;
+            scrollbar-color: var(--secondary-color) var(--light-bg);
+        }
+        
+        .item-list::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .item-list::-webkit-scrollbar-track {
+            background: var(--light-bg);
+        }
+        
+        .item-list::-webkit-scrollbar-thumb {
+            background-color: var(--secondary-color);
+            border-radius: 20px;
+        }
+        
+        .item-list p {
+            padding: 12px;
+            color: var(--muted-text-color);
+            font-style: italic;
+            text-align: center;
+            margin: 0;
+        }
+
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            font-size: 0.95em;
+            transition: background-color 0.2s ease;
+        }
+        
+        .list-item:last-child {
+            border-bottom: none;
+        }
+        
+        .list-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .list-item span {
+            word-break: break-all;
+            margin-right: 10px;
+            flex-grow: 1;
+        }
+        
+        .item-actions {
+            flex-shrink: 0;
+        }
+
+        /* --- Result Area --- */
+        #result-container {
+            margin-top: 30px;
+            border: 1px solid var(--border-color);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            background-color: #fff;
+            box-shadow: var(--box-shadow);
+            transition: opacity 0.3s ease;
+        }
+        
+        #result-container.loading {
+            opacity: 0.7;
+        }
+        
+        #result-container h2,
+        #result-container h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+        }
+        
+        #result-container h2::before {
+            content: "";
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%233b82f6'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'%3E%3C/path%3E%3C/svg%3E");
+            background-size: contain;
+        }
+        
+        #result-container h3 {
+            margin-top: 25px;
+            font-size: 1.1em;
+        }
+        
+        #result-container h3::before {
+            content: "";
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%233b82f6'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4'%3E%3C/path%3E%3C/svg%3E");
+            background-size: contain;
+        }
+        
+        #transcript-output {
+            border: 1px solid var(--border-color);
+            border-radius: var(--input-border-radius);
+            padding: 15px;
+            font-size: 1em;
+            line-height: 1.6;
+            width: 100%;
+            min-height: 150px;
+            background-color: #fff;
+            color: var(--text-color);
+        }
+        
+        pre#raw-result {
+            background-color: #f1f5f9;
+            padding: 15px;
+            border-radius: var(--input-border-radius);
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 350px;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+            font-size: 0.9em;
+            color: #334155;
+            margin: 0;
+            scrollbar-width: thin;
+            scrollbar-color: var(--secondary-color) #f1f5f9;
+        }
+        
+        pre#raw-result::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        pre#raw-result::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        
+        pre#raw-result::-webkit-scrollbar-thumb {
+            background-color: var(--secondary-color);
+            border-radius: 20px;
+        }
+
+        /* --- Warnings --- */
+        .warning {
+            color: #9f1239;
+            font-weight: 500;
+            text-align: center;
+            padding: 12px 15px;
+            background-color: #ffe4e6;
+            border: 1px solid #fecdd3;
+            border-radius: var(--border-radius);
+            margin: 15px 0 20px;
+            font-size: 0.95em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .warning::before {
+            content: "";
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23dc2626'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z'%3E%3C/path%3E%3C/svg%3E");
+            background-size: contain;
+            flex-shrink: 0;
+        }
+        
+        .sidebar-warning {
+            margin-top: 25px;
+        }
+
+        /* Hidden File Inputs */
+        .hidden-file-input {
+            display: none;
+        }
+
+       /* --- Audio Source Section --- */
+        .audio-source-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .audio-source-option {
+            flex: 1 1 300px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--input-border-radius);
+            background-color: #fff;
+            transition: all 0.2s ease;
+            /* Initially hide all */
+            display: none;
+        }
+
+        /* Ensure the first option (Upload Audio File) is visible by default */
+        #file-upload-option {
+            display: block;
+        }
+
+        .audio-source-option:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .audio-source-option h4 {
+            margin-top: 0;
+            margin-bottom: 12px;
+            font-size: 1em;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+        }
+
+        .audio-source-option h4::before {
+            content: "";
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+
+        #file-upload-option h4::before {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%233b82f6'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12'%3E%3C/path%3E%3C/svg%3E");
+        }
+
+        #url-upload-option h4::before {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%233b82f6'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1'%3E%3C/path%3E%3C/svg%3E");
+        }
+
+        #microphone-option h4::before {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%233b82f6'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v3a3 3 0 01-3 3z'%3E%3C/path%3E%3C/svg%3E");
+        }
+
+        .micro-button {
+            width: 100%;
+            background-color: #f1f5f9;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: var(--button-border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1em;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .micro-button:hover:not(.recording) {
+            background-color: #e2e8f0;
+        }
+
+        .micro-button.recording {
+            background-color: var(--danger-color);
+            color: white;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .micro-button::before {
+            content: "";
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%233b82f6'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v3a3 3 0 01-3 3z'%3E%3C/path%3E%3C/svg%3E");
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+
+        .micro-button.recording::before {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 12a9 9 0 11-18 0 9 9 0 0118 0z'%3E%3C/path%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z'%3E%3C/path%3E%3C/svg%3E");
+        }
+        /* --- Advanced Options Section --- */
+        #advanced-options {
+            margin-top: 30px;
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            background-color: #fff;
+        }
+        
+        #advanced-options h3 {
+            margin-top: 0;
+            font-size: 1.2em;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        #advanced-options h3::before {
+            content: "";
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%233b82f6'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4'%3E%3C/path%3E%3C/svg%3E");
+            background-size: contain;
+            transition: transform 0.3s ease;
+        }
+        
+        #advanced-options.collapsed h3::before {
+            transform: rotate(-90deg);
+        }
+        
+        #advanced-options-content {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        #advanced-options.collapsed #advanced-options-content {
+            display: none;
+        }
+        
+        .option-group {
+            margin-bottom: 5px;
+        }
+        
+        .option-group .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .option-group .checkbox-container input[type="checkbox"] {
+            margin-right: 8px;
+            width: 16px;
+            height: 16px;
+        }
+
+        /* --- Media Queries --- */
+        @media (max-width: 992px) {
+            #sidebar {
+                position: fixed;
+                height: 100vh;
+                z-index: 1000;
+                background-color: var(--light-bg);
+            }
+            
+            #main-content {
+                width: 100%;
+                padding: 20px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            #sidebar {
+                width: 100%;
+                max-width: none;
+                padding: 15px;
+            }
+            
+            #sidebar-toggle-btn {
+                top: 5px;
+                left: auto;
+                right: 5px;
+                transform: none;
+                z-index: 1100;
+            }
+            
+            #sidebar.collapsed + #main-content #sidebar-toggle-btn {
+                left: auto;
+            }
+            
+            #main-content {
+                padding: 15px;
+            }
+            
+            .audio-source-option {
+                flex: 1 1 100%;
+            }
+            
+            #advanced-options-content {
+                grid-template-columns: 1fr;
+            }
+        }
+		
+		
+		 /* --- Audio Source Tabs --- */
+        .audio-source-tab-container {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .audio-source-tab {
+            padding: 10px 15px;
+            border: none;
+            background-color: transparent;
+            cursor: pointer;
+            font-size: 1em;
+            color: var(--secondary-color);
+            border-bottom: 2px solid transparent;
+            transition: color 0.2s ease, border-bottom-color 0.2s ease;
+        }
+
+        .audio-source-tab.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .audio-source-tab:hover {
+            color: var(--primary-color);
+        }
+
+        /* --- Audio Source Content Container --- */
+        .audio-source-content-container .audio-source-option {
+            display: none; /* Initially hide all content options */
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--input-border-radius);
+            background-color: #fff;
+            transition: opacity 0.3s ease;
+        }
+
+        .audio-source-content-container .audio-source-option:first-child {
+            display: block; /* Show the first one by default */
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <h1>Deepgram 控制台</h1>
+        
+        <div class="management-section" id="api-key-manager">
+            <h3>API 密钥管理</h3>
+            <div class="input-group">
+                <label for="new-api-key">添加新 API 密钥</label>
+                <input type="text" id="new-api-key" placeholder="输入您的 Deepgram API 密钥...">
+            </div>
+            <button onclick="addApiKey()">添加密钥</button>
+            
+            <div class="item-list" id="api-key-list">
+                <p>还没有添加 API 密钥</p>
+            </div>
+            
+            <div class="management-actions">
+                <button onclick="triggerImport('api-keys')">导入密钥</button>
+                <button onclick="exportData('api-keys')">导出密钥</button>
+            </div>
+        </div>
+        
+        <div class="management-section" id="model-manager">
+            <h3>模型管理</h3>
+            <div class="input-group">
+                <label for="model-name">模型名称</label>
+                <input type="text" id="model-name" placeholder="模型名称 (例如: nova-2)">
+            </div>
+            <button onclick="addModel()">添加模型</button>
+            
+            <div class="item-list" id="model-list">
+                <p>还没有添加模型</p>
+            </div>
+            
+            <div class="management-actions">
+                <button onclick="triggerImport('models')">导入模型</button>
+                <button onclick="exportData('models')">导出模型</button>
+            </div>
+        </div>
+        
+        <p class="warning sidebar-warning">请确保您的 API 密钥安全，不要与他人分享。</p>
+    </div>
+    
+    <div id="main-content">
+        <button id="sidebar-toggle-btn" onclick="toggleSidebar()">☰</button>
+        
+        <h1>Deepgram 语音转文本工具</h1>
+      <div class="audio-source-tab-container">
+            <button class="audio-source-tab active" onclick="showAudioSourceTab('file-upload-option')">上传文件</button>
+            <button class="audio-source-tab" onclick="showAudioSourceTab('url-upload-option')">URL 加载</button>
+            <button class="audio-source-tab" onclick="showAudioSourceTab('microphone-option')">麦克风录音</button>
+        </div>
+
+        <div class="audio-source-content-container">
+            <div class="audio-source-option" id="file-upload-option">
+                <h4>上传音频文件</h4>
+                <p>支持格式: MP3, WAV, M4A, FLAC, OGG, AAC</p>
+                <button onclick="document.getElementById('audioFile').click()">选择文件</button>
+                <input type="file" id="audioFile" class="hidden-file-input" accept="audio/*">
+                <p id="selected-file-name"></p>
+            </div>
+
+            <div class="audio-source-option" id="url-upload-option">
+                <h4>从 URL 加载</h4>
+                <input type="url" id="audioUrl" placeholder="输入音频文件的 URL...">
+            </div>
+
+            <div class="audio-source-option" id="microphone-option">
+                <h4>使用麦克风录音</h4>
+                <button id="micro-button" class="micro-button" onclick="toggleRecording()">点击开始录音</button>
+                <p id="recording-status"></p>
+            </div>
+        </div>
+        
+        <div id="advanced-options" class="collapsed">
+            <h3 onclick="toggleAdvancedOptions()">高级选项</h3>
+            
+            <div id="advanced-options-content">
+                <div class="option-group">
+                    <label>模型选择</label>
+                    <select id="model-select">
+                        <option value="nova-2">Nova-2 (默认)</option>
+                        <!-- 动态添加的模型选项将在这里 -->
+                    </select>
+                </div>
+                
+                <div class="option-group">
+                    <label>语言</label>
+                    <select id="language-select">
+                        
+                        <option value="zh">中文</option> 
+                    </select>
+                </div>
+                
+                <div class="option-group">
+                    <label>处理选项</label>
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="diarization" >
+                        <label for="diarization">说话者分离</label>
+                    </div>
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="punctuation" >
+                        <label for="punctuation">添加标点符号</label>
+                    </div>
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="paragraphs" >
+                        <label for="paragraphs">自动分段</label>
+                    </div>
+                </div>
+                
+                <div class="option-group">
+                    <label>增强功能</label>
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="summarize">
+                        <label for="summarize">生成摘要</label>
+                    </div>
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="detect-topics">
+                        <label for="detect-topics">检测主题</label>
+                    </div>
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="detect-entities">
+                        <label for="detect-entities">识别实体</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <button id="transcribe-button" onclick="transcribeAudio()">转录音频</button>
+        
+        <div id="result-container" style="display: none;">
+            <h2>转录结果</h2>
+            
+            <div id="transcript-output"></div>
+            
+            <h3 id="raw-result-heading" style="display: none;">原始 JSON 结果</h3>
+            <pre id="raw-result" style="display: none;"></pre>
+        </div>
+    </div>
+    
+    <input type="file" id="import-file" class="hidden-file-input" accept=".json">
+    
+    <script>
+        // API 密钥和模型的存储
+        let apiKeys = JSON.parse(localStorage.getItem('apiKeys')) || [];
+        let models = JSON.parse(localStorage.getItem('models')) || [];
+        let selectedApiKey = localStorage.getItem('selectedApiKey') || '';
+        let isRecording = false;
+        let mediaRecorder;
+        let audioChunks = [];
+        
+			   // 修正1：在页面初始化时填充模型选择下拉菜单
+		document.addEventListener('DOMContentLoaded', function() {
+			// 原有代码
+			refreshApiKeyList();
+			refreshModelList();
+			
+			// 添加：填充模型选择下拉菜单
+			populateModelSelect();
+			
+			// 原有代码
+			document.getElementById('audioFile').addEventListener('change', function(e) {
+				const fileName = e.target.files[0] ? e.target.files[0].name : '';
+				document.getElementById('selected-file-name').textContent = fileName ? `已选择: ${fileName}` : '';
+			});
+			
+			document.getElementById('import-file').addEventListener('change', handleImportFile);
+		});
+
+        
+        // 侧边栏切换
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
+        }
+        
+        // 高级选项切换
+        function toggleAdvancedOptions() {
+            const advancedOptions = document.getElementById('advanced-options');
+            advancedOptions.classList.toggle('collapsed');
+        }
+        
+        // 添加 API 密钥
+        function addApiKey() {
+            const keyInput = document.getElementById('new-api-key');
+            const apiKey = keyInput.value.trim();
+            
+            if (!apiKey) {
+                alert('请输入有效的 API 密钥');
+                return;
+            }
+            
+            if (apiKeys.includes(apiKey)) {
+                alert('该 API 密钥已存在');
+                return;
+            }
+            
+            apiKeys.push(apiKey);
+            localStorage.setItem('apiKeys', JSON.stringify(apiKeys));
+            
+            // 如果是第一个密钥，自动选择它
+            if (apiKeys.length === 1) {
+                selectedApiKey = apiKey;
+                localStorage.setItem('selectedApiKey', selectedApiKey);
+            }
+            
+            keyInput.value = '';
+            refreshApiKeyList();
+        }
+        
+        // 移除 API 密钥
+        function removeApiKey(index) {
+            const removedKey = apiKeys[index];
+            apiKeys.splice(index, 1);
+            localStorage.setItem('apiKeys', JSON.stringify(apiKeys));
+            
+            // 如果删除的是当前选中的密钥，重置选择
+            if (removedKey === selectedApiKey) {
+                selectedApiKey = apiKeys.length > 0 ? apiKeys[0] : '';
+                localStorage.setItem('selectedApiKey', selectedApiKey);
+            }
+            
+            refreshApiKeyList();
+        }
+        
+        // 选择 API 密钥
+        function selectApiKey(index) {
+            selectedApiKey = apiKeys[index];
+            localStorage.setItem('selectedApiKey', selectedApiKey);
+            refreshApiKeyList();
+        }
+        
+        // 刷新 API 密钥列表
+       // 修正2：修复样式问题中的CSS变量使用
+function refreshApiKeyList() {
+    const list = document.getElementById('api-key-list');
+    list.innerHTML = '';
+    
+    if (apiKeys.length === 0) {
+        list.innerHTML = '<p>还没有添加 API 密钥</p>';
+        return;
+    }
+    
+    // 获取CSS变量
+    const primaryLightColor = getComputedStyle(document.documentElement)
+        .getPropertyValue('--primary-light-color').trim();
+    
+    apiKeys.forEach((key, index) => {
+        const isSelected = key === selectedApiKey;
+        const maskedKey = key.substring(0, 5) + '...' + key.substring(key.length - 5);
+        
+        const item = document.createElement('div');
+        item.className = 'list-item';
+        // 修正CSS变量的使用
+        item.style.backgroundColor = isSelected ? primaryLightColor : '';
+        item.style.fontWeight = isSelected ? 'bold' : 'normal';
+        item.innerHTML = `
+            <span>${maskedKey}</span>
+            <div class="item-actions">
+                <button onclick="selectApiKey(${index})" ${isSelected ? 'disabled' : ''}>
+                    ${isSelected ? '已选择' : '选择'}</button>
+                <button onclick="removeApiKey(${index})">删除</button>
+            </div>
+        `;
+        list.appendChild(item);
+    });
+}
+        
+        // 添加模型
+        function addModel() {
+            const modelInput = document.getElementById('model-name');
+            const modelName = modelInput.value.trim();
+            
+            if (!modelName) {
+                alert('请输入有效的模型名称');
+                return;
+            }
+            
+            if (models.includes(modelName)) {
+                alert('该模型已存在');
+                return;
+            }
+            
+            models.push(modelName);
+            localStorage.setItem('models', JSON.stringify(models));
+            
+            modelInput.value = '';
+            refreshModelList();
+            populateModelSelect();
+        }
+        
+        // 移除模型
+        function removeModel(index) {
+            models.splice(index, 1);
+            localStorage.setItem('models', JSON.stringify(models));
+            refreshModelList();
+            populateModelSelect();
+        }
+        
+        // 刷新模型列表
+        function refreshModelList() {
+            const list = document.getElementById('model-list');
+            list.innerHTML = '';
+            
+            if (models.length === 0) {
+                list.innerHTML = '<p>还没有添加模型</p>';
+                return;
+            }
+            
+            models.forEach((model, index) => {
+                const item = document.createElement('div');
+                item.className = 'list-item';
+                item.innerHTML = `
+                    <span>${model}</span>
+                    <div class="item-actions">
+                        <button onclick="removeModel(${index})">删除</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+        
+        // 填充模型选择下拉菜单
+        function populateModelSelect() {
+            const select = document.getElementById('model-select');
+            
+            // 保存当前选择的值
+            const currentValue = select.value;
+            
+            // 清除除了第一个选项以外的所有选项
+            while (select.options.length > 1) {
+                select.remove(1);
+            }
+            
+            // 添加自定义模型
+            models.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model;
+                option.textContent = model;
+                select.appendChild(option);
+            });
+            
+            // 恢复先前选择的值
+            if (currentValue && Array.from(select.options).some(option => option.value === currentValue)) {
+                select.value = currentValue;
+            }
+        }
+        
+        // 启动录音功能
+        function toggleRecording() {
+            const button = document.getElementById('micro-button');
+            const statusElem = document.getElementById('recording-status');
+            
+            if (!isRecording) {
+                // 开始录音
+                navigator.mediaDevices.getUserMedia({ audio: true })
+                    .then(stream => {
+                        mediaRecorder = new MediaRecorder(stream);
+                        audioChunks = [];
+                        
+                        mediaRecorder.ondataavailable = e => {
+                            audioChunks.push(e.data);
+                        };
+                        
+                        mediaRecorder.onstop = () => {
+                            button.classList.remove('recording');
+                            button.textContent = '点击开始录音';
+                            statusElem.textContent = '录音已完成';
+                        };
+                        
+                        mediaRecorder.start();
+                        isRecording = true;
+                        button.classList.add('recording');
+                        button.textContent = '点击停止录音';
+                        statusElem.textContent = '正在录音...';
+                    })
+                    .catch(err => {
+                        console.error('无法访问麦克风:', err);
+                        alert('无法访问麦克风，请检查您的设备设置。');
+                    });
+            } else {
+                // 停止录音
+                mediaRecorder.stop();
+                isRecording = false;
+            }
+        }
+        
+        // 转录音频
+        async function transcribeAudio() {
+            const resultContainer = document.getElementById('result-container');
+            const transcriptOutput = document.getElementById('transcript-output');
+            const rawResultElem = document.getElementById('raw-result');
+            const rawResultHeading = document.getElementById('raw-result-heading');
+            const transcribeButton = document.getElementById('transcribe-button');
+            
+            // 检查是否选择了 API 密钥
+            if (!selectedApiKey) {
+                alert('请先添加并选择一个 API 密钥');
+                return;
+            }
+            
+            // 检查音频来源
+            let audioData, audioSource;
+            const fileInput = document.getElementById('audioFile');
+            const urlInput = document.getElementById('audioUrl');
+            
+            if (fileInput.files.length > 0) {
+                audioData = fileInput.files[0];
+                audioSource = 'file';
+            } else if (urlInput.value.trim()) {
+                audioData = urlInput.value.trim();
+                audioSource = 'url';
+            } else if (audioChunks.length > 0) {
+                audioData = new Blob(audioChunks, { type: 'audio/webm' });
+                audioSource = 'microphone';
+            } else {
+                alert('请选择音频文件、输入 URL 或使用麦克风录制');
+                return;
+            }
+            
+            // 准备选项
+            const model = document.getElementById('model-select').value;
+            const language = document.getElementById('language-select').value;
+            const diarize = document.getElementById('diarization').checked;
+            const punctuate = document.getElementById('punctuation').checked;
+            const paragraphs = document.getElementById('paragraphs').checked;
+            const summarize = document.getElementById('summarize').checked;
+            const detectTopics = document.getElementById('detect-topics').checked;
+            const detectEntities = document.getElementById('detect-entities').checked;
+            
+            // 显示加载状态
+            resultContainer.style.display = 'block';
+            resultContainer.classList.add('loading');
+            transcriptOutput.textContent = '处理中，请稍候...';
+            rawResultElem.style.display = 'none';
+            rawResultHeading.style.display = 'none';
+            
+            transcribeButton.disabled = true;
+            transcribeButton.textContent = '正在处理...';
+            transcribeButton.classList.add('loading');
+            
+            try {
+                let response;
+                
+                 if (audioSource === 'file' || audioSource === 'microphone') {
+            // 使用文件或录音
+            const formData = new FormData();
+            formData.append('audio', audioData);
+            
+            // 添加请求参数
+            const params = new URLSearchParams();
+            params.append('model', model);
+            if (language) params.append('language', language);
+            params.append('diarize', diarize);
+            params.append('punctuate', punctuate);
+            params.append('paragraphs', paragraphs);
+            if (summarize) params.append('summarize', summarize);
+            if (detectTopics) params.append('detect_topics', detectTopics);
+            if (detectEntities) params.append('detect_entities', detectEntities);
+            
+            response = await fetch(`https://api.deepgram.com/v1/listen?${params.toString()}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Token ${selectedApiKey}`
+                },
+                body: formData
+            });
+        } else {
+            // 使用 URL
+            const requestBody = {
+                url: audioData
+            };
+            
+            // 添加选项
+            requestBody.model = model;
+            if (language) requestBody.language = language;
+            requestBody.diarize = diarize;
+            requestBody.punctuate = punctuate;
+            requestBody.paragraphs = paragraphs;
+            if (summarize) requestBody.summarize = summarize;
+            if (detectTopics) requestBody.detect_topics = detectTopics;
+            if (detectEntities) requestBody.detect_entities = detectEntities;
+            
+            response = await fetch('https://api.deepgram.com/v1/listen', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Token ${selectedApiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            });
+        }
+        
+        // 结果处理优化
+        if (!response.ok) {
+            throw new Error(`API 错误: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+       // 结果处理优化
+        if (data.results && data.results.channels && data.results.channels.length > 0) {
+            // 优先使用格式化的文本结果
+            let transcript = '';
+
+            // 检查是否有分段文本
+            if (paragraphs && data.results.channels[0].alternatives[0].paragraphs) {
+                const paragraphsList = data.results.channels[0].alternatives[0].paragraphs.paragraphs;
+                transcript = paragraphsList.map(p => p.text).join('\n\n');
+				
+				if(!transcript){
+				   transcript = data.results.channels[0].alternatives[0].transcript;
+
+				}
+            } else {
+                transcript = data.results.channels[0].alternatives[0].transcript;
+            }
+
+            // 如果启用了摘要，显示摘要
+            let summaryText = '';
+            if (summarize && data.results.summary) {
+                summaryText = `<h3>摘要</h3><div class="summary-section">${data.results.summary.text}</div>`;
+            }
+
+            // 如果启用了主题检测，显示主题
+            let topicsText = '';
+            if (detectTopics && data.results.topics) {
+                topicsText = `<h3>主题</h3><div class="topics-section">${data.results.topics.topics.join(', ')}</div>`;
+            }
+
+            // 如果启用了实体检测，显示实体
+            let entitiesText = '';
+            if (detectEntities && data.results.entities) {
+                const entitiesList = data.results.entities.entities.map(entity =>
+                    `${entity.class}: ${entity.value}`
+                ).join(', ');
+                entitiesText = `<h3>实体</h3><div class="entities-section">${entitiesList}</div>`;
+            }
+
+            // 合并所有结果
+			
+            transcriptOutput.innerHTML = `
+                <div class="transcript-text">${transcript || '无法识别任何文本'}</div>
+                ${summaryText}
+                ${topicsText}
+                ${entitiesText}
+            `;
+
+            // 显示原始 JSON
+            rawResultElem.textContent = JSON.stringify(data, null, 2);
+            rawResultElem.style.display = 'block';
+            rawResultHeading.style.display = 'block';
+        } else {
+            transcriptOutput.textContent = '未能生成转录结果';
+        }
+    } catch (error) {
+        console.error('转录错误:', error);
+        transcriptOutput.textContent = `转录失败: ${error.message}`;
+    } finally {
+        resultContainer.classList.remove('loading');
+        transcribeButton.disabled = false;
+        transcribeButton.textContent = '转录音频';
+        transcribeButton.classList.remove('loading');
+    }
+}
+
+// 添加功能：清除录音数据
+function clearRecording() {
+    audioChunks = [];
+    document.getElementById('recording-status').textContent = '录音已清除';
+}
+
+// 添加功能：添加一些默认模型
+function addDefaultModels() {
+    const defaultModels = ['nova-2', 'general', 'whisper-medium', 'whisper-large'];
+    
+    let added = 0;
+    defaultModels.forEach(model => {
+        if (!models.includes(model)) {
+            models.push(model);
+            added++;
+        }
+    });
+    
+    if (added > 0) {
+        localStorage.setItem('models', JSON.stringify(models));
+        refreshModelList();
+        populateModelSelect();
+        alert(`已添加 ${added} 个默认模型`);
+    } else {
+        alert('所有默认模型已存在');
+    }
+}
+
+// 添加功能：按键盘快捷键录音
+document.addEventListener('keydown', function(e) {
+    // 按空格键开始/停止录音（仅当焦点不在输入框中时）
+    if (e.code === 'Space' && 
+        !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
+        e.preventDefault();
+        toggleRecording();
+    }
+});
+        
+		
+		// 为录音按钮添加清除录音的右键菜单
+document.getElementById('micro-button').addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    if (confirm('是否清除当前录音数据？')) {
+        clearRecording();
+    }
+})
+
+// 添加功能：为模型管理添加默认模型按钮
+function addDefaultModelsButton() {
+    const actionsDiv = document.querySelector('#model-manager .management-actions');
+    const defaultButton = document.createElement('button');
+    defaultButton.textContent = '添加默认模型';
+    defaultButton.onclick = addDefaultModels;
+    
+    // 添加图标
+    defaultButton.style.display = 'flex';
+    defaultButton.style.alignItems = 'center';
+    defaultButton.style.justifyContent = 'center';
+    
+    // 插入到第一个按钮前面
+    actionsDiv.insertBefore(defaultButton, actionsDiv.firstChild);
+}
+        // 触发文件导入
+        function triggerImport(type) {
+            const importType = type; // 'api-keys' 或 'models'
+            document.getElementById('import-file').setAttribute('data-import-type', importType);
+            document.getElementById('import-file').click();
+        }
+        
+        // 处理文件导入
+        function handleImportFile(e) {
+            const file = e.target.files[0];
+            const importType = e.target.getAttribute('data-import-type');
+            
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const importedData = JSON.parse(event.target.result);
+                    
+                    if (importType === 'api-keys') {
+                        // 导入 API 密钥
+                        if (Array.isArray(importedData)) {
+                           apiKeys = [...new Set([...apiKeys, ...importedData])];
+                            localStorage.setItem('apiKeys', JSON.stringify(apiKeys));
+                            refreshApiKeyList();
+                            alert(`成功导入 ${importedData.length} 个 API 密钥`);
+                        } else {
+                            alert('导入的文件格式无效，请确保是有效的 JSON 数组');
+                        }
+                    } else if (importType === 'models') {
+                        // 导入模型
+                        if (Array.isArray(importedData)) {
+                            models = [...new Set([...models, ...importedData])];
+                            localStorage.setItem('models', JSON.stringify(models));
+                            refreshModelList();
+                            populateModelSelect();
+                            alert(`成功导入 ${importedData.length} 个模型`);
+                        } else {
+                            alert('导入的文件格式无效，请确保是有效的 JSON 数组');
+                        }
+                    }
+                } catch (error) {
+                    console.error('导入错误:', error);
+                    alert('导入文件时出错，请确保文件是有效的 JSON 格式');
+                }
+                
+                // 清空文件输入，以便于重复导入相同的文件
+                e.target.value = '';
+            };
+            
+            reader.readAsText(file);
+        }
+        
+        // 导出数据
+        function exportData(type) {
+            let data, filename;
+            
+            if (type === 'api-keys') {
+                data = apiKeys;
+                filename = 'deepgram-api-keys.json';
+            } else if (type === 'models') {
+                data = models;
+                filename = 'deepgram-models.json';
+            } else {
+                return;
+            }
+            
+            // 创建下载链接
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", filename);
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+		
+		
+		
+		
+		
+		function showAudioSourceTab(tabId) {
+            const fileUploadOption = document.getElementById('file-upload-option');
+            const urlUploadOption = document.getElementById('url-upload-option');
+            const microphoneOption = document.getElementById('microphone-option');
+
+            const fileUploadTab = document.querySelector('.audio-source-tab-container button:nth-child(1)');
+            const urlUploadTab = document.querySelector('.audio-source-tab-container button:nth-child(2)');
+            const microphoneTab = document.querySelector('.audio-source-tab-container button:nth-child(3)');
+
+            fileUploadOption.style.display = 'none';
+            urlUploadOption.style.display = 'none';
+            microphoneOption.style.display = 'none';
+
+            fileUploadTab.classList.remove('active');
+            urlUploadTab.classList.remove('active');
+            microphoneTab.classList.remove('active');
+
+            document.getElementById(tabId).style.display = 'block';
+
+            if (tabId === 'file-upload-option') {
+                fileUploadTab.classList.add('active');
+            } else if (tabId === 'url-upload-option') {
+                urlUploadTab.classList.add('active');
+            } else if (tabId === 'microphone-option') {
+                microphoneTab.classList.add('active');
+            }
+        }
+		 // 页面加载完成后执行
+        window.addEventListener('load', function() {
+            addDefaultModelsButton();
+
+            // 如果URL中有apiKey参数，自动添加API密钥
+            const urlParams = new URLSearchParams(window.location.search);
+            const apiKey = urlParams.get('apiKey');
+            if (apiKey && !apiKeys.includes(apiKey)) {
+                apiKeys.push(apiKey);
+                localStorage.setItem('apiKeys', JSON.stringify(apiKeys));
+                selectedApiKey = apiKey;
+                localStorage.setItem('selectedApiKey', selectedApiKey);
+                refreshApiKeyList();
+                alert('已从URL添加API密钥');
+            }
+
+            // Show the file upload tab and content by default
+            showAudioSourceTab('file-upload-option');
+        });
+    </script>
+</body>
+</html>

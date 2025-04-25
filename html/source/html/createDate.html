@@ -13,73 +13,68 @@
         }
         .controls-container {
             display: flex;
-            flex-direction: column; /* 使年份、月份容器垂直排列 */
+            flex-direction: column; /* 使年份、月份、添加列、删除列容器垂直排列 */
             gap: 10px;
             margin-bottom: 15px;
-            align-items: center;
+            align-items: stretch; /* 拉伸子元素以占据容器宽度 */
             width: 100%; /* 让容器宽度撑满 */
             max-width: 400px; /* 控制容器的最大宽度 */
         }
         .year-input-container,
-        .month-select-container {
+        .month-select-container,
+        .add-columns-container,
+        .remove-column-container {
             display: flex;
             align-items: center;
             gap: 10px;
-            width: 100%; /* 让年份和月份容器宽度撑满 */
-            justify-content: center; /* 使标签和选择框居中对齐 */
+            width: 100%; /* 让每个控制组宽度撑满 */
         }
         .controls-container label {
             font-size: 14px;
             color: #555;
-            margin-bottom: 0; /* 移除标签的下边距 */
-            text-align: left; /* 标签左对齐 */
-            width: 60px; /* 固定标签的宽度，使其对齐 */
+            margin-bottom: 0;
+            text-align: left;
+            width: 90px; /* 设置所有标签的固定宽度为 90px，足以容纳 "删除列:" */
+            flex-shrink: 0; /* 防止标签宽度被压缩 */
         }
         .controls-container input[type="number"],
-        .controls-container select {
+        .controls-container select,
+        .add-columns-input-group input[type="text"],
+        .remove-column-container select {
             padding: 8px;
             border: 1px solid #ccc;
             border-radius: 4px;
             font-size: 14px;
             flex-grow: 1; /* 让输入框和选择框占据剩余空间 */
         }
-        .add-columns-container {
-            display: flex;
-            flex-direction: column; /* 使标签和输入组垂直排列 */
-            gap: 10px;
-            align-items: center;
-            width: 100%; /* 让容器宽度撑满 */
-        }
         .add-columns-input-group {
             display: flex;
-            gap: 10px;
+            gap: 5px;
             align-items: center;
-            width: 100%; /* 让输入组宽度撑满 */
-            justify-content: center; /* 使输入框和按钮居中 */
+            flex-grow: 1; /* 让输入组也占据剩余空间 */
         }
-        .add-columns-container label {
-            width: auto; /* 让标签根据内容自适应宽度 */
-            text-align: center;
+        .add-columns-input-group input[type="text"] {
+            max-width: none; /* 移除最大宽度限制，让其根据 flex-grow 调整 */
         }
-        .add-columns-container input[type="text"] {
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 14px;
-            flex-grow: 1; /* 让输入框占据剩余空间 */
-            max-width: 300px;
-        }
-        .add-columns-container button {
-            padding: 8px 12px;
-            background-color: #007bff;
+        .add-columns-input-group button,
+        .remove-column-container button {
+            padding: 8px 10px;
+            background-color: #007bff; /* 添加列按钮颜色 */
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             font-size: 14px;
+            flex-shrink: 0; /* 防止按钮宽度被压缩 */
         }
-        .add-columns-container button:hover {
+        .remove-column-container button {
+            background-color: #dc3545; /* 删除列按钮颜色 */
+        }
+        .add-columns-input-group button:hover {
             background-color: #0056b3;
+        }
+        .remove-column-container button:hover {
+            background-color: #c82333;
         }
         #output-container {
             position: relative; /* 设置为相对定位，方便内部绝对定位 */
@@ -160,7 +155,7 @@
             padding: 6px 10px; /* 调整内边距 */
             border: none;
             border-radius: 4px;
-            background-color: #007bff; /* 修改为蓝色，更符合“选中”的含义 */
+            background-color: #007bff; /* 修改为蓝色 */
             color: white;
             cursor: pointer;
             font-size: 12px; /* 调整字体大小 */
@@ -196,18 +191,24 @@
             </select>
         </div>
         <div class="add-columns-container">
+            <label for="new-column">添加列:</label>
             <div class="add-columns-input-group">
-                <input type="text" id="new-column" placeholder="例如: 事项, 备注">
-                <button onclick="addCustomColumns()">添加列</button>
+                <input type="text" id="new-column" placeholder="列名">
+                <button onclick="addCustomColumn()">添加</button>
             </div>
+        </div>
+        <div class="remove-column-container">
+            <label for="remove-column">删除列:</label>
+            <select id="remove-column-select">
+                </select>
+            <button onclick="removeCustomColumn()">删除</button>
         </div>
     </div>
 
     <div id="output-container">
         <div id="calendar-output"></div>
         <div class="copy-button-container">
-            <button onclick="selectTable()" class="copy-button">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <button onclick="selectTable()" class="copy-button"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                     <polyline points="17 3 21 7 21 3"></polyline>
                     <polyline points="3 17 7 21 3 21"></polyline>
@@ -218,7 +219,7 @@
     </div>
 
     <div id="toast-container">
-        表格已选中！
+        操作成功！
     </div>
 
     <script>
@@ -234,7 +235,7 @@
                 const d = String(date.getDate()).padStart(2, '0');
                 const rowData = { 日期: `${y}-${m}-${d}` };
                 customColumns.forEach(col => {
-                    rowData[col] = ''; // 初始为空
+                    rowData[col] = rowData[col] || ''; // 保留已有数据，新增列初始为空
                 });
                 dates.push(rowData);
             }
@@ -256,7 +257,7 @@
             data.forEach(row => {
                 table += '<tr>';
                 headers.forEach(header => {
-                    table += `<td>${row[header]}</td>`;
+                    table += `<td>${row[header] === undefined ? '' : row[header]}</td>`;
                 });
                 table += '</tr>\n';
             });
@@ -291,14 +292,49 @@
             tableContainer.classList.add('month-table-container');
             tableContainer.innerHTML = `<h3>${year} 年 ${monthName}</h3>${htmlTable}`;
             calendarOutput.appendChild(tableContainer);
+
+            updateRemoveColumnOptions();
         }
 
-        function addCustomColumns() {
+        function addCustomColumn() {
             const newColumnInput = document.getElementById('new-column');
-            const newColumns = newColumnInput.value.split(',').map(col => col.trim()).filter(col => col !== '');
-            customColumns = [...customColumns, ...newColumns];
-            newColumnInput.value = ''; // 清空输入框
-            updateCalendar(); // 重新生成表格以显示新列
+            const newColumnName = newColumnInput.value.trim();
+            if (newColumnName && !customColumns.includes(newColumnName)) {
+                customColumns.push(newColumnName);
+                newColumnInput.value = '';
+                updateCalendar();
+                showToast('已添加列: ' + newColumnName);
+            } else if (customColumns.includes(newColumnName)) {
+                showToast('列名已存在！');
+            } else {
+                showToast('请输入有效的列名！');
+            }
+        }
+
+        function removeCustomColumn() {
+            const removeColumnSelect = document.getElementById('remove-column-select');
+            const selectedColumn = removeColumnSelect.value;
+            if (selectedColumn) {
+                const index = customColumns.indexOf(selectedColumn);
+                if (index > -1) {
+                    customColumns.splice(index, 1);
+                    updateCalendar();
+                    showToast('已删除列: ' + selectedColumn);
+                }
+            } else {
+                showToast('请选择要删除的列！');
+            }
+        }
+
+        function updateRemoveColumnOptions() {
+            const removeColumnSelect = document.getElementById('remove-column-select');
+            removeColumnSelect.innerHTML = ''; // 清空选项
+            customColumns.forEach(column => {
+                const option = document.createElement('option');
+                option.value = column;
+                option.textContent = column;
+                removeColumnSelect.appendChild(option);
+            });
         }
 
         function selectTable() {
@@ -306,7 +342,6 @@
             const toastContainer = document.getElementById('toast-container');
 
             if (table) {
-                // 使用 Selection API 选中表格
                 const range = document.createRange();
                 range.selectNodeContents(table);
                 const selection = window.getSelection();
@@ -327,7 +362,16 @@
             }
         }
 
-        // 页面加载时初始化日历
+        function showToast(message) {
+            const toastContainer = document.getElementById('toast-container');
+            toastContainer.innerText = message;
+            toastContainer.classList.add('show');
+            setTimeout(() => {
+                toastContainer.classList.remove('show');
+            }, 2000);
+        }
+
+        // 页面加载时初始化日历和删除列选项
         updateCalendar();
     </script>
 </body>

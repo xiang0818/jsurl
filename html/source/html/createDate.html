@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>月份日历表格</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .controls-container {
+            display: flex;
+            flex-direction: column; /* 使年份、月份容器垂直排列 */
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+            width: 100%; /* 让容器宽度撑满 */
+            max-width: 400px; /* 控制容器的最大宽度 */
+        }
+        .year-input-container,
+        .month-select-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%; /* 让年份和月份容器宽度撑满 */
+            justify-content: center; /* 使标签和选择框居中对齐 */
+        }
+        .controls-container label {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 0; /* 移除标签的下边距 */
+            text-align: left; /* 标签左对齐 */
+            width: 60px; /* 固定标签的宽度，使其对齐 */
+        }
+        .controls-container input[type="number"],
+        .controls-container select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            flex-grow: 1; /* 让输入框和选择框占据剩余空间 */
+        }
+        .add-columns-container {
+            display: flex;
+            flex-direction: column; /* 使标签和输入组垂直排列 */
+            gap: 10px;
+            align-items: center;
+            width: 100%; /* 让容器宽度撑满 */
+        }
+        .add-columns-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            width: 100%; /* 让输入组宽度撑满 */
+            justify-content: center; /* 使输入框和按钮居中 */
+        }
+        .add-columns-container label {
+            width: auto; /* 让标签根据内容自适应宽度 */
+            text-align: center;
+        }
+        .add-columns-container input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            flex-grow: 1; /* 让输入框占据剩余空间 */
+            max-width: 300px;
+        }
+        .add-columns-container button {
+            padding: 8px 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .add-columns-container button:hover {
+            background-color: #0056b3;
+        }
+        #output-container {
+            position: relative; /* 设置为相对定位，方便内部绝对定位 */
+            width: 80%;
+            max-width: 800px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-top: 10px;
+            padding: 20px;
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        h3 {
+            color: #555;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        hr {
+            border-top: 1px solid #eee;
+            margin: 20px 0;
+        }
+        .error-message {
+            color: red;
+            font-weight: bold;
+            margin-top: 10px;
+            text-align: center;
+        }
+        #toast-container {
+            position: fixed;
+            top: 20px; /* 修改为显示在顶部 */
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            font-size: 16px; /* 调整字体大小 */
+            border: none; /* 移除边框 */
+        }
+        #toast-container.show {
+            opacity: 1;
+        }
+        .copy-button-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            opacity: 0; /* 初始隐藏 */
+            transition: opacity 0.3s ease-in-out;
+        }
+        #output-container:hover .copy-button-container {
+            opacity: 1; /* 鼠标悬停时显示 */
+        }
+        .copy-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 10px; /* 调整内边距 */
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff; /* 修改为蓝色，更符合“选中”的含义 */
+            color: white;
+            cursor: pointer;
+            font-size: 12px; /* 调整字体大小 */
+        }
+        .copy-button svg {
+            margin-right: 3px; /* 调整图标和文字的间距 */
+        }
+    </style>
+</head>
+<body>
+    <h1>月份日历表格</h1>
+
+    <div class="controls-container">
+        <div class="year-input-container">
+            <label for="year">年份:</label>
+            <input type="number" id="year" value="2025">
+        </div>
+        <div class="month-select-container">
+            <label for="month">月份:</label>
+            <select id="month-select" onchange="updateCalendar()">
+                <option value="1">一月</option>
+                <option value="2">二月</option>
+                <option value="3">三月</option>
+                <option value="4">四月</option>
+                <option value="5" selected>五月</option>
+                <option value="6">六月</option>
+                <option value="7">七月</option>
+                <option value="8">八月</option>
+                <option value="9">九月</option>
+                <option value="10">十月</option>
+                <option value="11">十一月</option>
+                <option value="12">十二月</option>
+            </select>
+        </div>
+        <div class="add-columns-container">
+            <div class="add-columns-input-group">
+                <input type="text" id="new-column" placeholder="例如: 事项, 备注">
+                <button onclick="addCustomColumns()">添加列</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="output-container">
+        <div id="calendar-output"></div>
+        <div class="copy-button-container">
+            <button onclick="selectTable()" class="copy-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <polyline points="17 3 21 7 21 3"></polyline>
+                    <polyline points="3 17 7 21 3 21"></polyline>
+                </svg>
+                选中表格
+            </button>
+        </div>
+    </div>
+
+    <div id="toast-container">
+        表格已选中！
+    </div>
+
+    <script>
+        let customColumns = []; // 用于存储用户添加的列
+
+        function generateMonthData(year, month) {
+            const daysInMonth = new Date(year, month, 0).getDate();
+            const dates = [];
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month - 1, day);
+                const y = date.getFullYear();
+                const m = String(date.getMonth() + 1).padStart(2, '0');
+                const d = String(date.getDate()).padStart(2, '0');
+                const rowData = { 日期: `${y}-${m}-${d}` };
+                customColumns.forEach(col => {
+                    rowData[col] = ''; // 初始为空
+                });
+                dates.push(rowData);
+            }
+            return dates;
+        }
+
+        function convertToTable(data) {
+            if (!data || data.length === 0) {
+                return "<p class='error-message'>没有数据。</p>";
+            }
+            const headers = Object.keys(data[0]);
+            let table = '<table>\n';
+            table += '<thead><tr>';
+            headers.forEach(header => {
+                table += `<th>${header}</th>`;
+            });
+            table += '</tr></thead>\n';
+            table += '<tbody>\n';
+            data.forEach(row => {
+                table += '<tr>';
+                headers.forEach(header => {
+                    table += `<td>${row[header]}</td>`;
+                });
+                table += '</tr>\n';
+            });
+            table += '</tbody>\n';
+            table += '</table>';
+            return table;
+        }
+
+        function updateCalendar() {
+            const yearInput = document.getElementById('year');
+            const monthSelect = document.getElementById('month-select');
+            const calendarOutput = document.getElementById('calendar-output');
+            calendarOutput.innerHTML = '';
+
+            const year = parseInt(yearInput.value);
+            const month = parseInt(monthSelect.value);
+
+            if (isNaN(year)) {
+                calendarOutput.innerHTML = '<p class="error-message">请输入有效的年份。</p>';
+                return;
+            }
+
+            if (isNaN(month) || month < 1 || month > 12) {
+                calendarOutput.innerHTML = '<p class="error-message">请选择有效的月份。</p>';
+                return;
+            }
+
+            const monthData = generateMonthData(year, month);
+            const htmlTable = convertToTable(monthData);
+            const monthName = new Date(year, month - 1, 1).toLocaleString('default', { month: 'long' });
+            const tableContainer = document.createElement('div');
+            tableContainer.classList.add('month-table-container');
+            tableContainer.innerHTML = `<h3>${year} 年 ${monthName}</h3>${htmlTable}`;
+            calendarOutput.appendChild(tableContainer);
+        }
+
+        function addCustomColumns() {
+            const newColumnInput = document.getElementById('new-column');
+            const newColumns = newColumnInput.value.split(',').map(col => col.trim()).filter(col => col !== '');
+            customColumns = [...customColumns, ...newColumns];
+            newColumnInput.value = ''; // 清空输入框
+            updateCalendar(); // 重新生成表格以显示新列
+        }
+
+        function selectTable() {
+            const table = document.querySelector('#calendar-output table');
+            const toastContainer = document.getElementById('toast-container');
+
+            if (table) {
+                // 使用 Selection API 选中表格
+                const range = document.createRange();
+                range.selectNodeContents(table);
+                const selection = window.getSelection();
+                selection.removeAllRanges();
+                selection.addRange(range);
+
+                toastContainer.innerText = '表格已选中！';
+                toastContainer.classList.add('show');
+                setTimeout(() => {
+                    toastContainer.classList.remove('show');
+                }, 2000);
+            } else {
+                toastContainer.innerText = '没有找到表格。';
+                toastContainer.classList.add('show');
+                setTimeout(() => {
+                    toastContainer.classList.remove('show');
+                }, 3000);
+            }
+        }
+
+        // 页面加载时初始化日历
+        updateCalendar();
+    </script>
+</body>
+</html>

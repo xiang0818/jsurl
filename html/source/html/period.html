@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>市场情绪周期可视化</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+ :root {
+      --blue: #3b82f6;
+      --green: #10b981;
+      --yellow: #f59e0b;
+      --red: #ef4444;
+      --gray: #6b7280;
+      --transition-duration: 0.4s;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    }
+    
+    body {
+      background-color: #f8fafc;
+      color: #1e293b;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    header {
+      text-align: center;
+      margin-bottom: 3rem;
+      position: relative;
+    }
+    
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, var(--blue), var(--green), var(--yellow), var(--red), var(--gray));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: gradient 10s ease infinite;
+      background-size: 400% 400%;
+    }
+    
+    @keyframes gradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    .subtitle {
+      font-size: 1.2rem;
+      color: #64748b;
+    }
+    
+    /* 修改后的顶部导航样式 - 透明无边框 */
+    .phase-navigation {
+      position: sticky;
+      top: 0;
+      background-color: transparent; /* 改为透明背景 */
+      z-index: 100;
+      padding: 1rem 0;
+      margin-bottom: 2rem;
+      /* 移除 box-shadow */
+    }
+    
+    .phase-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      background-color: rgba(255, 255, 255, 0.8); /* 给按钮容器添加半透明白色背景 */
+      backdrop-filter: blur(5px); /* 添加毛玻璃效果 */
+      padding: 0.5rem;
+      border-radius: 20px;
+      max-width: 95%;
+      margin: 0 auto;
+    }
+    
+    .phase-button {
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+      white-space: nowrap;
+      /* 移除按钮的阴影效果 */
+      box-shadow: none !important;
+    }
+    
+    .phase-button:hover {
+      transform: translateY(-2px);
+      /* 移除悬停阴影 */
+    }
+    
+    .cycle-container {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+    
+    /* Cycle Visualization */
+    .cycle-visualization {
+      height: 500px;
+      position: relative;
+      margin-bottom: 3rem;
+    }
+    
+    .cycle-path {
+      width: 90%;
+      height: 300px;
+      margin: 0 auto;
+      position: relative;
+    }
+    
+    .cycle-line {
+      position: absolute;
+      height: 4px;
+      width: 0;
+      background: linear-gradient(90deg, 
+        var(--blue) 0%, var(--blue) 20%,
+        var(--green) 20%, var(--green) 40%,
+        var(--yellow) 40%, var(--yellow) 60%,
+        var(--red) 60%, var(--red) 80%,
+        var(--gray) 80%, var(--gray) 100%
+      );
+      top: 50%;
+      left: 0;
+      transform: translateY(-50%);
+      animation: drawLine 1.5s ease-out forwards;
+      z-index: 1;
+    }
+    
+    @keyframes drawLine {
+      to { width: 100%; }
+    }
+    
+    .nodes-container {
+      position: absolute;
+      width: 90%;
+      height: 300px;
+      top: 0;
+      left: 5%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .node {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: all var(--transition-duration);
+      opacity: 0;
+      transform: scale(0.8);
+      position: relative;
+      z-index: 2;
+      color: #fff;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+    
+    .node:nth-child(1) { animation: fadeInNode 0.5s 0.3s forwards; }
+    .node:nth-child(2) { animation: fadeInNode 0.5s 0.6s forwards; }
+    .node:nth-child(3) { animation: fadeInNode 0.5s 0.9s forwards; }
+    .node:nth-child(4) { animation: fadeInNode 0.5s 1.2s forwards; }
+    .node:nth-child(5) { animation: fadeInNode 0.5s 1.5s forwards; }
+    
+    @keyframes fadeInNode {
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    
+    .node:hover {
+      transform: scale(1.1);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    }
+    
+    .node.active {
+      transform: scale(1.1);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+    }
+    
+    .node-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.3rem;
+    }
+    
+    .node-name {
+      font-size: 0.7rem;
+      text-align: center;
+      line-height: 1.2;
+      padding: 0 5px;
+    }
+    
+    .node-pulse {
+      position: absolute;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+      z-index: -1;
+    }
+    
+    @keyframes pulse {
+      0% {
+        width: 100%;
+        height: 100%;
+        opacity: 0.8;
+      }
+      100% {
+        width: 140%;
+        height: 140%;
+        opacity: 0;
+      }
+    }
+    
+    /* Detail Card */
+    .detail-card {
+      background-color: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+      padding: 2rem;
+      margin-top: 2rem;
+      transition: all var(--transition-duration);
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    
+    .detail-card.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .detail-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .detail-icon-container {
+      width: 60px;
+      height: 60px;
+      border-radius: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-right: 1.5rem;
+      flex-shrink: 0;
+    }
+    
+    .detail-icon {
+      font-size: 2rem;
+      color: white;
+    }
+    
+    .detail-title {
+      flex-grow: 1;
+    }
+    
+    .detail-name {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+    }
+    
+    .detail-alias {
+      font-size: 1rem;
+      color: #64748b;
+    }
+    
+    .detail-description {
+      margin-bottom: 2rem;
+      line-height: 1.8;
+    }
+    
+    .detail-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+    
+    @media (max-width: 768px) {
+      .detail-content {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .detail-section {
+      margin-bottom: 1.5rem;
+    }
+    
+    .detail-section-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+    }
+    
+    .detail-section-title i {
+      margin-right: 0.5rem;
+    }
+    
+    .detail-list {
+      list-style-type: none;
+    }
+    
+    .detail-list li {
+      padding: 0.5rem 0;
+      display: flex;
+      align-items: flex-start;
+    }
+    
+    .detail-list li::before {
+      content: "•";
+      margin-right: 0.5rem;
+      font-weight: bold;
+    }
+    
+    /* Chart */
+    .chart-container {
+      height: 300px;
+      margin: 2rem 0;
+      position: relative;
+    }
+    
+    .chart {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    
+    .chart-line {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      fill: none;
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 1000;
+      stroke-dashoffset: 1000;
+      animation: drawChart 2s ease-out forwards;
+    }
+    
+    @keyframes drawChart {
+      to { stroke-dashoffset: 0; }
+    }
+    
+    .chart-area {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      fill-opacity: 0.1;
+    }
+    
+    .chart-labels {
+      position: absolute;
+      bottom: -30px;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 10px;
+    }
+    
+    .chart-label {
+      font-size: 0.8rem;
+      color: #64748b;
+      text-align: center;
+      width: 20%;
+    }
+    
+    .chart-points {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+    
+    .chart-point {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .chart-point.active {
+      width: 14px;
+      height: 14px;
+      box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.5);
+    }
+    
+    .chart-tooltip {
+      position: absolute;
+      background-color: white;
+      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      font-size: 0.9rem;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s;
+      z-index: 10;
+    }
+    
+    .chart-tooltip.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    /* Footer */
+    footer {
+      text-align: center;
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 1px solid #e2e8f0;
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+    
+    /* Animations */
+    @keyframes float {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0); }
+    }
+    
+    .float {
+      animation: float 4s ease-in-out infinite;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .nodes-container {
+        flex-direction: column;
+        height: auto;
+        gap: 1.5rem;
+      }
+      
+      .cycle-line {
+        height: 100%;
+        width: 4px;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        background: linear-gradient(180deg, 
+          var(--blue) 0%, var(--blue) 20%,
+          var(--green) 20%, var(--green) 40%,
+          var(--yellow) 40%, var(--yellow) 60%,
+          var(--red) 60%, var(--red) 80%,
+          var(--gray) 80%, var(--gray) 100%
+        );
+      }
+      
+      @keyframes drawLine {
+        to { height: 100%; }
+      }
+      
+      .cycle-visualization {
+        height: 700px;
+      }
+      
+      .cycle-path {
+        height: 600px;
+      }
+      
+      .detail-header {
+        flex-direction: column;
+        text-align: center;
+      }
+      
+      .detail-icon-container {
+        margin-right: 0;
+        margin-bottom: 1rem;
+      }
+      
+      .phase-buttons {
+        gap: 0.3rem;
+      }
+      
+      .phase-button {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>市场情绪周期</h1>
+      <p class="subtitle">了解市场情绪的变化，把握交易时机</p>
+    </header>
+    
+    <!-- 新增的顶部导航 -->
+    <div class="phase-navigation">
+      <div class="phase-buttons">
+        <button class="phase-button" style="background-color: #3b82f6; color: white;" data-id="1">情绪冰点期</button>
+        <button class="phase-button" style="background-color: #10b981; color: white;" data-id="2">情绪混沌、酝酿转启动期</button>
+        <button class="phase-button" style="background-color: #f59e0b; color: white;" data-id="3">情绪发酵期</button>
+        <button class="phase-button" style="background-color: #ef4444; color: white;" data-id="4">情绪高峰、亢奋期</button>
+        <button class="phase-button" style="background-color: #6b7280; color: white;" data-id="5">情绪退潮期</button>
+      </div>
+    </div>
+    
+    <div class="cycle-container">
+      <div class="cycle-visualization">
+        <div class="cycle-path">
+          <div class="cycle-line"></div>
+          <div class="nodes-container">
+            <!-- Nodes will be generated by JavaScript -->
+          </div>
+        </div>
+      </div>
+      
+      <div class="chart-container">
+        <div class="chart">
+          <svg width="100%" height="100%" viewBox="0 0 1000 300" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="chartGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#3b82f6" />
+                <stop offset="20%" stop-color="#3b82f6" />
+                <stop offset="20%" stop-color="#10b981" />
+                <stop offset="40%" stop-color="#10b981" />
+                <stop offset="40%" stop-color="#f59e0b" />
+                <stop offset="60%" stop-color="#f59e0b" />
+                <stop offset="60%" stop-color="#ef4444" />
+                <stop offset="80%" stop-color="#ef4444" />
+                <stop offset="80%" stop-color="#6b7280" />
+                <stop offset="100%" stop-color="#6b7280" />
+              </linearGradient>
+            </defs>
+            <path class="chart-line" stroke="url(#chartGradient)" d="M0,250 C50,250 100,200 150,180 C200,160 250,150 300,120 C350,90 400,70 500,50 C600,30 650,40 700,70 C750,100 800,150 850,200 C900,250 950,250 1000,250" />
+            <path class="chart-area" fill="url(#chartGradient)" d="M0,250 C50,250 100,200 150,180 C200,160 250,150 300,120 C350,90 400,70 500,50 C600,30 650,40 700,70 C750,100 800,150 850,200 C900,250 950,250 1000,250 L1000,300 L0,300 Z" />
+          </svg>
+          <div class="chart-points">
+            <!-- Points will be generated by JavaScript -->
+          </div>
+          <div class="chart-labels">
+            <div class="chart-label">情绪冰点期</div>
+            <div class="chart-label">混沌转启动期</div>
+            <div class="chart-label">情绪发酵期</div>
+            <div class="chart-label">情绪高峰期</div>
+            <div class="chart-label">情绪退潮期</div>
+          </div>
+          <div class="chart-tooltip"></div>
+        </div>
+      </div>
+      
+      <div class="detail-card">
+        <!-- Details will be filled by JavaScript -->
+      </div>
+    </div>
+    
+    <footer>
+      <p>© 2025 市场情绪周期分析 - 把握市场脉搏，顺势而为</p>
+    </footer>
+  </div>
+  
+  <script>
+    // Data
+    const emotionCycleData = [
+      {
+        id: 1,
+        name: "情绪冰点期",
+        alias: "情绪低落期",
+        description: "在一轮明显的亏钱效应代表的退潮期之后，市场情绪会非常低迷，投资者对市场前景感到极度悲观，多空双方都没有了动力，情绪像结了冰一样，没有一点生机，偶有尝试也会失败。",
+        features: [
+          "总龙头连续杀跌20-30%",
+          "涨停数量连续下降，甚至跌停家数超过了涨停家数",
+          "连板高度一直受压制，最高板下降至4板、3板甚至2板以下",
+          "龙头杀跌，补涨股也杀跌",
+          "一些看起来很好的板，次日根本无溢价",
+          "短线情绪极度冰点，市场没有主流热点",
+          "没有持续的赚钱效应，大部分热点都是一日游",
+          "可操作性极差，容易吃面"
+        ],
+        strategies: [
+          "冷静、自信、坚定地观察、等待",
+          "等待混沌期头铁的前浪们的厮杀博弈结束",
+          "等待冰点、混沌期结束后，明显的启动期到来的信号",
+          "多看少动，不当炮灰",
+          "禁止做高位板接力",
+          "直到情绪二冰过后，看到明显的多方信号"
+        ],
+        color: "#3b82f6", // 蓝色
+        icon: "thermometer-snow"
+      },
+      {
+        id: 2,
+        name: "情绪混沌、酝酿转启动期",
+        alias: "情绪混沌酝酿转上升阶段",
+        description: "在情绪退潮期一轮极致的亏钱效应导致的市场情绪极致的悲观、冷却之后，随着做多情绪的慢慢积累，情绪逐渐转暖，从冰点转向混沌、酝酿做多转向启动，上一轮周期结束，新周期的种子开始萌发,对于市场的看法开始从一致的悲观到出现分歧，转入混沌、摸索、试探、酝酿启动阶段，市场情绪开始升温，投资者对于市场的前景逐渐开始乐观。",
+        features: [
+          "市场不再动辄出现天地大面",
+          "昨日涨停开盘无溢价直接闷杀或昨日涨停今天跌停的现象几乎绝迹",
+          "炸板股明显减少",
+          "开始出现代表情绪好转的大长腿",
+          "某只个股开始打破3板、4板的空间压制，逆势创出近期新高",
+          "板块内个股走势都明显强于大盘，具有较强的板块效应",
+          "题材质量容量颇有想象空间"
+        ],
+        strategies: [
+          "可以考虑适当加仓",
+          "关注一些具有潜力的板块和个股",
+          "初期，应该以做首板为主",
+          "中后期，可以小仓试错那些低位新起的、身位最高、竞价最强、有板块效应、有助攻的潜在龙头"
+        ],
+        color: "#10b981", // 绿色
+        icon: "seedling"
+      },
+      {
+        id: 3,
+        name: "情绪发酵期",
+        alias: "情绪扩散期",
+        description: "出现在情绪启动期之后，是行情确认，分歧转一致的过程。这个阶段市场情绪进一步升温，投资者对市场的信心逐渐增强。",
+        features: [
+          "随着空间的进一步开拓，板块赚钱效应出现",
+          "连板股数量开始增多"
+        ],
+        strategies: [
+          "在情绪周期里面，最容易出妖股，最容易上车、赚钱的时期就是情绪发酵期和高潮期",
+          "这个阶段是龙头选手大展身手、上仓位的最关键阶段",
+          "在发酵期的初期，着重的是题材（属性）方向，要聚焦市场最主流热点的龙头",
+          "做不到一字龙可在启动期第一时间上同身位的换手票，其次再考虑龙二",
+          "在发酵期的中后期，可以考虑去做主流板块低位起涨的首板或2板票的补涨"
+        ],
+        color: "#f59e0b", // 黄色
+        icon: "chart-line-up"
+      },
+      {
+        id: 4,
+        name: "情绪高峰、亢奋期",
+        alias: "情绪主升、高潮阶段",
+        description: "这个阶段投资者情绪非常高涨，信心爆棚，高潮达到亢奋，情绪到达顶峰，行情面临转折，风险即将来临。",
+        features: [
+          "主涨属性明确，总龙头确认",
+          "龙头股一路上涨，核心股连续缩量加速",
+          "龙头带跟风，跟风助龙头",
+          "板块出现批量涨停潮，涨停晋级率非常高",
+          "甚至大盘中军都能连续涨停",
+          "涨停数量连续上升，甚至没有了跌停",
+          "连板股空间高度不断打开，能达到6、7板以上",
+          "主线热点票霸屏",
+          "昨日成交金额前列皆是大涨"
+        ],
+        strategies: [
+          "情绪主升期，着重的是情绪，胆大重仓就是效益",
+          "竞价就抢龙头、抢一字涨停板，竞价不抢，你可能就买不到",
+          "做焦点中的焦点、做最闪亮的市场总龙头",
+          "如果总龙头大单一字不给机会，再考虑择强做低位1板、2板的卡位晋级或科创板的强势票",
+          "先上车套利，待龙头分歧再换车总龙头",
+          "总龙头涨到高位或者特停后，就围绕总龙头的主涨属性选择那些属性最正、股性最好的个股做补涨",
+          "此时一定要不惜血本、不惜代价抢先手买在启动点",
+          "此阶段，分歧加仓总龙头，重仓持股待涨就是最佳策略"
+        ],
+        color: "#ef4444", // 红色
+        icon: "rocket"
+      },
+      {
+        id: 5,
+        name: "情绪退潮期",
+        alias: "情绪降温阶段",
+        description: "这个阶段市场的亏钱效应逐渐加大，赚钱效应逐渐消失，情绪从一致的做多到开始出现分化降温，投资者对市场的信心逐渐减弱，直至崩溃。",
+        features: [
+          "退潮期的开始，出现在一段上升周期的末端",
+          "龙头还在走加速，低位也在补涨助攻，中位股却率先跳水",
+          "情绪出现强列的分歧、分化",
+          "总龙头断板即A杀，龙头股、跟风股纷纷开始补跌",
+          "高位连板股接连出现亏钱效应，连扳高度逐步下降",
+          "炸板大面票、昨日涨停今天跌停、闷杀的票批量出现",
+          "尤其高位炸板股增多，极端的出现天地板大面",
+          "低位股快速轮动，持续性极差"
+        ],
+        strategies: [
+          "除了龙头的抱团走穿越，坚决减仓或者清仓",
+          "特别是中位的跟风股，以避免市场继续下跌的风险",
+          "情绪退潮期，着重的是筹码结构",
+          "如果叠加指数下跌周期，亏钱效应扩散很快，资金争相离场，市场没有接力情绪",
+          "各种模式都会失效，最佳策略就是空仓等待",
+          "等待情绪退潮期的结束直至情绪冰点期的到来"
+        ],
+        color: "#6b7280", // 灰色
+        icon: "wave-sine"
+      }
+    ];
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      renderNodes();
+      renderChartPoints();
+      showDetail(1); // Show first phase by default
+      
+      // 添加顶部导航按钮点击事件
+      const phaseButtons = document.querySelectorAll('.phase-button');
+      phaseButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const id = parseInt(this.dataset.id);
+          showDetail(id);
+        });
+      });
+      
+      // Initialize additional elements
+      setTimeout(() => {
+        createMarketVisualizer();
+        createCycleSwitcher();
+        createMarketDataTable();
+      }, 1500);
+    });
+    
+    // Render cycle nodes
+    function renderNodes() {
+      const nodesContainer = document.querySelector('.nodes-container');
+      emotionCycleData.forEach((cycle, index) => {
+        const node = document.createElement('div');
+        node.className = 'node';
+        node.style.backgroundColor = cycle.color;
+        node.dataset.id = cycle.id;
+        
+        // Add pulse effect to the first node
+        if (index === 0) {
+          const pulse = document.createElement('div');
+          pulse.className = 'node-pulse';
+          pulse.style.backgroundColor = cycle.color;
+          node.appendChild(pulse);
+          node.classList.add('active');
+        }
+        
+        const iconClass = getIconClass(cycle.icon);
+        
+        node.innerHTML = `
+          <i class="node-icon ${iconClass}"></i>
+          <div class="node-name">${cycle.name}</div>
+        `;
+        
+        node.addEventListener('click', function() {
+          // Remove active class and pulse from all nodes
+          const nodes = document.querySelectorAll('.node');
+          nodes.forEach(n => {
+            n.classList.remove('active');
+            const existingPulse = n.querySelector('.node-pulse');
+            if (existingPulse) {
+              n.removeChild(existingPulse);
+            }
+          });
+          
+          // Add active class and pulse to clicked node
+          this.classList.add('active');
+          const pulse = document.createElement('div');
+          pulse.className = 'node-pulse';
+          pulse.style.backgroundColor = emotionCycleData[index].color;
+          this.appendChild(pulse);
+          
+          // Show details
+          showDetail(cycle.id);
+          
+          // Activate corresponding chart point
+          activateChartPoint(cycle.id);
+        });
+        
+        nodesContainer.appendChild(node);
+      });
+    }
+    
+    // Render chart points
+    function renderChartPoints() {
+      const chartPoints = document.querySelector('.chart-points');
+      const chartTooltip = document.querySelector('.chart-tooltip');
+      
+      const points = [
+        { id: 1, x: 100, y: 180 },
+        { id: 2, x: 300, y: 120 },
+        { id: 3, x: 500, y: 50 },
+        { id: 4, x: 700, y: 70 },
+        { id: 5, x: 900, y: 200 }
+      ];
+      
+      points.forEach((point, index) => {
+        const cycle = emotionCycleData[index];
+        const pointElement = document.createElement('div');
+        pointElement.className = 'chart-point';
+        pointElement.dataset.id = cycle.id;
+        pointElement.style.backgroundColor = cycle.color;
+        pointElement.style.left = `${point.x / 10}%`;
+        pointElement.style.top = `${point.y / 3}%`;
+        
+        if (index === 0) {
+          pointElement.classList.add('active');
+        }
+        
+        pointElement.addEventListener('mouseover', function(e) {
+          chartTooltip.innerHTML = cycle.name;
+          chartTooltip.style.left = `${e.pageX - chartTooltip.offsetWidth / 2}px`;
+          chartTooltip.style.top = `${e.pageY - chartTooltip.offsetHeight - 10}px`;
+          chartTooltip.classList.add('show');
+        });
+        
+        pointElement.addEventListener('mouseout', function() {
+          chartTooltip.classList.remove('show');
+        });
+        
+        pointElement.addEventListener('click', function() {
+          // Remove active class from all points
+          document.querySelectorAll('.chart-point').forEach(p => {
+            p.classList.remove('active');
+          });
+          
+          // Add active class to clicked point
+          this.classList.add('active');
+          
+          // Show details
+          showDetail(cycle.id);
+          
+          // Activate corresponding node
+          activateNode(cycle.id);
+        });
+        
+        chartPoints.appendChild(pointElement);
+      });
+    }
+    
+    // Show detail for selected cycle
+    function showDetail(id) {
+      const detailCard = document.querySelector('.detail-card');
+      const cycle = emotionCycleData.find(c => c.id === parseInt(id));
+      
+      if (!cycle) return;
+      
+      const iconClass = getIconClass(cycle.icon);
+      
+      detailCard.innerHTML = `
+        <div class="detail-header">
+          <div class="detail-icon-container" style="background-color: ${cycle.color}">
+            <i class="detail-icon ${iconClass}"></i>
+          </div>
+          <div class="detail-title">
+            <h2 class="detail-name">${cycle.name}</h2>
+            <div class="detail-alias">${cycle.alias}</div>
+          </div>
+        </div>
+        
+        <div class="detail-description">
+          ${cycle.description}
+        </div>
+        
+        <div class="detail-content">
+          <div class="detail-section">
+            <h3 class="detail-section-title">
+              <i class="fas fa-list-ul" style="color: ${cycle.color}"></i>
+              市场特征
+            </h3>
+            <ul class="detail-list">
+              ${cycle.features.map(feature => `<li>${feature}</li>`).join('')}
+            </ul>
+          </div>
+          
+          <div class="detail-section">
+            <h3 class="detail-section-title">
+              <i class="fas fa-lightbulb" style="color: ${cycle.color}"></i>
+              操作策略
+            </h3>
+            <ul class="detail-list">
+              ${cycle.strategies.map(strategy => `<li>${strategy}</li>`).join('')}
+            </ul>
+          </div>
+        </div>
+      `;
+      
+      // Apply animation
+      detailCard.classList.remove('show');
+      setTimeout(() => {
+        detailCard.classList.add('show');
+      }, 50);
+    }
+    
+    // Activate node based on chart point
+    function activateNode(id) {
+      const nodes = document.querySelectorAll('.node');
+      const cycle = emotionCycleData.find(c => c.id === parseInt(id));
+      
+      nodes.forEach(node => {
+        node.classList.remove('active');
+        const existingPulse = node.querySelector('.node-pulse');
+        if (existingPulse) {
+          node.removeChild(existingPulse);
+        }
+        
+        if (parseInt(node.dataset.id) === parseInt(id)) {
+          node.classList.add('active');
+          const pulse = document.createElement('div');
+          pulse.className = 'node-pulse';
+          pulse.style.backgroundColor = cycle.color;
+          node.appendChild(pulse);
+        }
+      });
+    }
+    
+    // Activate chart point based on node
+    function activateChartPoint(id) {
+      const points = document.querySelectorAll('.chart-point');
+      
+      points.forEach(point => {
+        point.classList.remove('active');
+        
+        if (parseInt(point.dataset.id) === parseInt(id)) {
+          point.classList.add('active');
+        }
+      });
+    }
+    
+    // Helper function to map icon names to Font Awesome classes
+    function getIconClass(iconName) {
+      const iconMap = {
+        'thermometer-snow': 'fas fa-snowflake',
+        'seedling': 'fas fa-seedling',
+        'chart-line-up': 'fas fa-chart-line',
+        'rocket': 'fas fa-rocket',
+        'wave-sine': 'fas fa-water'
+      };
+      
+      return iconMap[iconName] || 'fas fa-circle';
+    }
+    
+    // Add animated market data visualization
+    function createMarketVisualizer() {
+      const visualizerContainer = document.createElement('div');
+      visualizerContainer.className = 'market-visualizer';
+      visualizerContainer.style.marginTop = '3rem';
+      visualizerContainer.style.position = 'relative';
+      visualizerContainer.style.height = '200px';
+      visualizerContainer.style.overflow = 'hidden';
+      visualizerContainer.style.borderRadius = '8px';
+      visualizerContainer.style.backgroundColor = '#f1f5f9';
+      
+      const marketTitle = document.createElement('h3');
+      marketTitle.textContent = '市场活跃度实时模拟';
+      marketTitle.style.textAlign = 'center';
+      marketTitle.style.marginBottom = '1rem';
+      
+      document.querySelector('.cycle-container').appendChild(marketTitle);
+      document.querySelector('.cycle-container').appendChild(visualizerContainer);
+      
+      // Create dots representing market activity
+      const dotCount = 50;
+      const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#6b7280'];
+      
+      for (let i = 0; i < dotCount; i++) {
+        const dot = document.createElement('div');
+        dot.style.position = 'absolute';
+        dot.style.width = `${Math.random() * 8 + 4}px`;
+        dot.style.height = dot.style.width;
+        dot.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        dot.style.borderRadius = '50%';
+        dot.style.opacity = Math.random() * 0.7 + 0.3;
+        dot.style.left = `${Math.random() * 100}%`;
+        dot.style.top = `${Math.random() * 100}%`;
+        dot.style.transition = 'all 2s ease-in-out';
+        
+        visualizerContainer.appendChild(dot);
+        
+        // Animate dots
+        setInterval(() => {
+          dot.style.left = `${Math.random() * 100}%`;
+          dot.style.top = `${Math.random() * 100}%`;
+          dot.style.opacity = Math.random() * 0.7 + 0.3;
+        }, Math.random() * 3000 + 2000);
+      }
+    }
+    
+    // Add interactive cycle switcher
+    function createCycleSwitcher() {
+      const switcherContainer = document.createElement('div');
+      switcherContainer.className = 'cycle-switcher';
+      switcherContainer.style.display = 'flex';
+      switcherContainer.style.justifyContent = 'center';
+      switcherContainer.style.gap = '1rem';
+      switcherContainer.style.marginTop = '2rem';
+      switcherContainer.style.flexWrap = 'wrap';
+      
+      emotionCycleData.forEach(cycle => {
+        const button = document.createElement('button');
+        button.className = 'cycle-button';
+        button.dataset.id = cycle.id;
+        button.style.backgroundColor = cycle.color;
+        button.style.color = 'white';
+        button.style.border = 'none';
+        button.style.borderRadius = '8px';
+        button.style.padding = '0.75rem 1.5rem';
+        button.style.fontSize = '1rem';
+        button.style.fontWeight = 'bold';
+        button.style.cursor = 'pointer';
+        button.style.transition = 'all 0.3s';
+        button.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+        
+        const iconClass = getIconClass(cycle.icon);
+        
+        button.innerHTML = `
+          <i class="${iconClass}" style="margin-right: 0.5rem;"></i>
+          ${cycle.name}
+        `;
+        
+        button.addEventListener('mouseover', function() {
+          this.style.transform = 'translateY(-3px)';
+          this.style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.15)';
+        });
+        
+        button.addEventListener('mouseout', function() {
+          this.style.transform = 'translateY(0)';
+          this.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+        });
+        
+        button.addEventListener('click', function() {
+          const id = parseInt(this.dataset.id);
+          showDetail(id);
+          activateNode(id);
+          activateChartPoint(id);
+          
+          // Highlight active button
+          document.querySelectorAll('.cycle-button').forEach(btn => {
+            btn.style.opacity = '0.7';
+          });
+          this.style.opacity = '1';
+        });
+        
+        switcherContainer.appendChild(button);
+      });
+      
+      // Set first button as active
+      switcherContainer.querySelector('.cycle-button').style.opacity = '1';
+      document.querySelectorAll('.cycle-button').forEach((btn, i) => {
+        if (i > 0) btn.style.opacity = '0.7';
+      });
+      
+      document.querySelector('.cycle-container').appendChild(switcherContainer);
+    }
+    
+    // Add market data table
+    function createMarketDataTable() {
+      const tableContainer = document.createElement('div');
+      tableContainer.className = 'market-data-table';
+      tableContainer.style.marginTop = '3rem';
+      tableContainer.style.backgroundColor = 'white';
+      tableContainer.style.borderRadius = '16px';
+      tableContainer.style.padding = '1.5rem';
+      tableContainer.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.05)';
+      
+      const tableTitle = document.createElement('h3');
+      tableTitle.textContent = '各周期市场特征对比';
+      tableTitle.style.marginBottom = '1.5rem';
+      tableTitle.style.borderBottom = '1px solid #e2e8f0';
+      tableTitle.style.paddingBottom = '1rem';
+      
+      const table = document.createElement('div');
+      table.style.display = 'grid';
+      table.style.gridTemplateColumns = 'repeat(6, 1fr)';
+      table.style.gap = '1rem';
+      table.style.fontSize = '0.9rem';
+      
+      // Headers
+      const headers = ['特征', '冰点期', '启动期', '发酵期', '高峰期', '退潮期'];
+      headers.forEach(header => {
+        const cell = document.createElement('div');
+        cell.textContent = header;
+        cell.style.fontWeight = 'bold';
+        cell.style.padding = '0.5rem';
+        table.appendChild(cell);
+      });
+      
+      // Data rows
+      const rows = [
+        ['涨停数量', '极少', '少量', '增多', '大量', '减少'],
+        ['连板高度', '1-2板', '3-4板', '4-5板', '6-10板', '下降'],
+        ['赚钱效应', '几乎没有', '零星出现', '逐渐扩散', '普遍存在', '逐渐减弱'],
+        ['操作难度', '极高', '较高', '中等', '较低', '逐渐增加'],
+        ['资金状态', '观望为主', '试探进场', '加速进场', '全面入场', '加速撤离'],
+        ['风险程度', '小幅回调', '低风险', '中等风险', '高风险', '极高风险']
+      ];
+      
+      rows.forEach(row => {
+        row.forEach((cell, i) => {
+          const cellElement = document.createElement('div');
+          cellElement.textContent = cell;
+          cellElement.style.padding = '0.5rem';
+          
+          if (i > 0) {
+            const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#6b7280'];
+            cellElement.style.borderLeft = `2px solid ${colors[i-1]}`;
+            cellElement.style.color = colors[i-1];
+          }
+          
+          table.appendChild(cellElement);
+        });
+      });
+      
+      tableContainer.appendChild(tableTitle);
+      tableContainer.appendChild(table);
+      
+      document.querySelector('.cycle-container').appendChild(tableContainer);
+    }
+  </script>
+</body>
+</html>

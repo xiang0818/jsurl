@@ -10,18 +10,20 @@
             background-color: #f9f9f9;
             margin: 0;
             padding: 0;
+            min-height: 100vh;
         }
 
         .container {
-            width: 90%;
-            max-width: 600px;
-            margin: 40px auto;
+            width: 95%;  /* 加宽容器 */
+            max-width: 100%;  /* 增大最大宽度 */
+            margin: 20px auto;  /* 调整外边距 */
             padding: 30px;
             background-color: #fff;
             border-radius: 8px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
+        /* 以下样式保持完全不变 */
         .input-group {
             margin-bottom: 25px;
         }
@@ -88,16 +90,14 @@
             font-family: monospace;
         }
 
-        /* 聚焦样式 */
         textarea:focus, input:focus, select:focus {
             border-color: #4CAF50;
             outline: none;
         }
 
-        /* 响应式设计 */
         @media (max-width: 600px) {
             .container {
-                width: 95%;
+                width: 98%;  /* 移动端稍窄 */
                 padding: 20px;
             }
 
@@ -113,6 +113,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="input-group">
@@ -131,7 +132,7 @@
             </div>
             <div class="setting">
                 <label>补齐字符：</label>
-                <input type="text" id="padChar" maxlength="1" value=" ">
+                <input type="text" id="padChar"  value=" ">
             </div>
             <div class="setting">
                 <label>补齐长度：</label>
@@ -156,32 +157,35 @@
     </div>
 
     <script>
-        function processLines() {
-            const input = document.getElementById('input').value;
-            const padType = document.getElementById('padType').value;
-            const padChar = document.getElementById('padChar').value || ' ';
-            const padLength = parseInt(document.getElementById('padLength').value) || 0;
-            const splitChar = document.getElementById('splitChar').value;
-            const frameChar = document.getElementById('frameChar').value;
+function processLines() {
+        const input = document.getElementById('input').value;
+        const padType = document.getElementById('padType').value;
+        const padChar = document.getElementById('padChar').value || ' ';
+        const padLength = parseInt(document.getElementById('padLength').value) || 0;
+        const splitChar = document.getElementById('splitChar').value;
+        const frameChar = document.getElementById('frameChar').value;
 
-            const lines = input.split('\n');
-            let processedLines = [];
+        const lines = input.split('\n');
+        let processedLines = [];
 
-            for (let line of lines) {
-                let result = line.trim();
-                if (padType !== 'none' && padLength > result.length) {
-                    const padding = padChar.repeat(padLength - result.length);
-                    result = padType === 'left' ? padding + result : result + padding;
-                }
-                if (frameChar) {
-                    result = frameChar + result + frameChar;
-                }
-                processedLines.push(result);
+        for (let line of lines) {
+            let result = line.trim();
+            
+            // 修改后的补齐逻辑
+            if (padType !== 'none' && padLength > 0) {
+                const padding = padChar.repeat(padLength);
+                result = padType === 'left' ? padding + result : result + padding;
             }
-
-            let finalResult = processedLines.join(splitChar);
-            document.getElementById('output').value = finalResult;
+            
+            if (frameChar) {
+                result = frameChar + result + frameChar;
+            }
+            processedLines.push(result);
         }
+
+        let finalResult = processedLines.join(splitChar);
+        document.getElementById('output').value = finalResult;
+    }
     </script>
 </body>
 </html>

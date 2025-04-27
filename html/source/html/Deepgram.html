@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh">
 <head>
@@ -1250,6 +1251,8 @@ function refreshApiKeyList() {
                 alert('请选择音频文件、输入 URL 或使用麦克风录制');
                 return;
             }
+			
+			
             
             // 准备选项
             const model = document.getElementById('model-select').value;
@@ -1272,57 +1275,79 @@ function refreshApiKeyList() {
             transcribeButton.textContent = '正在处理...';
             transcribeButton.classList.add('loading');
             
-            try {
-                let response;
-                
-                 if (audioSource === 'file' || audioSource === 'microphone') {
-            // 使用文件或录音
-            const formData = new FormData();
-            formData.append('audio', audioData);
+			
+			
+			// 根据激活的选项卡确定音频源类型
+			const activeTab = document.querySelector('.audio-source-tab.active').textContent;
+			let audioSourceType;
+			switch(activeTab) {
+				case '上传文件': 
+					if (!fileInput.files[0]) {
+						alert('请选择要上传的音频文件');
+						return;
+					}
+					audioSourceType = 'file';
+					break;
+				case 'URL 加载':
+					if (!urlInput.value.trim()) {
+						alert('请输入有效的音频URL');
+						return;
+					}
+					audioSourceType = 'url';
+					break;
+				case '麦克风录音':
+					if (audioChunks.length === 0) {
+						alert('请先录制音频');
+						return;
+					}
+					audioSourceType = 'microphone';
+					break;
+				default:
+					alert('请选择有效的音频来源');
+					return;
+			}
+	
+	
+	
+	
+		 // 构建公共请求参数
+		const params = new URLSearchParams();
+		params.append('model', model);
+		if (language) params.append('language', language);
+		params.append('diarize', diarize);
+		params.append('punctuate', punctuate);
+		params.append('paragraphs', paragraphs);
+		if (summarize) params.append('summarize', summarize);
+		if (detectTopics) params.append('detect_topics', detectTopics);
+		if (detectEntities) params.append('detect_entities', detectEntities);
+		try {
+			let response;
+			const apiUrl = `https://api.deepgram.com/v1/listen?${params.toString()}`;
+
+			// 根据音频源类型构建请求体
+			if (audioSourceType === 'url') {
+				response = await fetch(apiUrl, {
+					method: 'POST',
+					headers: {
+						'Authorization': `Token ${selectedApiKey}`,
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({ url: audioData })
+				});
+			} else { // 文件和麦克风录音
+				const formData = new FormData();
+				formData.append('audio', audioData);
+				
+				response = await fetch(apiUrl, {
+					method: 'POST',
+					headers: {
+						'Authorization': `Token ${selectedApiKey}`
+					},
+					body: formData
+				});
+			}
+
             
-            // 添加请求参数
-            const params = new URLSearchParams();
-            params.append('model', model);
-            if (language) params.append('language', language);
-            params.append('diarize', diarize);
-            params.append('punctuate', punctuate);
-            params.append('paragraphs', paragraphs);
-            if (summarize) params.append('summarize', summarize);
-            if (detectTopics) params.append('detect_topics', detectTopics);
-            if (detectEntities) params.append('detect_entities', detectEntities);
-            
-            response = await fetch(`https://api.deepgram.com/v1/listen?${params.toString()}`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Token ${selectedApiKey}`
-                },
-                body: formData
-            });
-        } else {
-            // 使用 URL
-            const requestBody = {
-                url: audioData
-            };
-            
-            // 添加选项
-            requestBody.model = model;
-            if (language) requestBody.language = language;
-            requestBody.diarize = diarize;
-            requestBody.punctuate = punctuate;
-            requestBody.paragraphs = paragraphs;
-            if (summarize) requestBody.summarize = summarize;
-            if (detectTopics) requestBody.detect_topics = detectTopics;
-            if (detectEntities) requestBody.detect_entities = detectEntities;
-            
-            response = await fetch('https://api.deepgram.com/v1/listen', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Token ${selectedApiKey}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(requestBody)
-            });
-        }
         
         // 结果处理优化
         if (!response.ok) {

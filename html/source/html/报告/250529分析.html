@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>市场情绪周期判断工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        ice: {
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            900: '#1e3a8a'
+                        },
+                        chaos: {
+                            100: '#ede9fe',
+                            500: '#8b5cf6',
+                            900: '#4c1d95'
+                        },
+                        fermentation: {
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            900: '#14532d'
+                        },
+                        peak: {
+                            100: '#fef3c7',
+                            500: '#f59e0b',
+                            900: '#713f12'
+                        },
+                        ebb: {
+                            100: '#fee2e2',
+                            500: '#ef4444',
+                            900: '#7f1d1d'
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        .stage-card {
+            transition: all 0.3s ease;
+            transform: scale(0.98);
+        }
+        
+        .stage-card:hover {
+            transform: scale(1);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .feature-item {
+            transition: all 0.2s ease;
+        }
+        
+        .feature-item:hover {
+            transform: translateX(5px);
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .highlight-current {
+            border-width: 3px;
+            transform: scale(1.02);
+            z-index: 10;
+        }
+        
+        .pulse-highlight {
+            animation: pulse-slow 2s infinite;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            transition: width 1s ease-in-out;
+        }
+        
+        .heatmap-cell {
+            transition: all 0.3s ease;
+        }
+        
+        .heatmap-cell:hover {
+            transform: scale(1.1);
+            z-index: 2;
+        }
+        
+        .strategy-card {
+            transition: all 0.3s ease;
+        }
+        
+        .strategy-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-200 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+        <!-- 头部 -->
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-4">
+            <div>
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">市场情绪周期判断工具</h1>
+                <p class="mt-2 text-gray-600 dark:text-gray-400">基于市场数据特征，识别当前市场情绪阶段并提供策略建议</p>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div class="flex flex-col sm:flex-row items-center gap-3 bg-white dark:bg-gray-800 rounded-lg p-3 shadow">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        <span class="font-medium">涨停: <span class="text-green-600 dark:text-green-400">72</span></span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                        <span class="font-medium">跌停: <span class="text-red-600 dark:text-red-400">15</span></span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                        <span class="font-medium">最高板: <span class="text-amber-600 dark:text-amber-400">6</span></span>
+                    </div>
+                </div>
+                
+                <button id="theme-toggle" class="p-2 rounded-lg bg-white dark:bg-gray-800 shadow hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                    <i class="fas fa-moon text-gray-700 dark:text-yellow-400 dark:hidden"></i>
+                    <i class="fas fa-sun text-yellow-400 hidden dark:block"></i>
+                </button>
+            </div>
+        </header>
+        
+        <!-- 当前阶段判断 -->
+        <section class="mb-16 fade-in">
+            <div class="bg-gradient-to-r from-peak-500 to-amber-500 rounded-2xl p-0.5 shadow-lg">
+                <div class="bg-white dark:bg-gray-900 rounded-2xl p-6 md:p-8">
+                    <div class="flex flex-col md:flex-row justify-between gap-6">
+                        <div class="flex-1">
+                            <div class="inline-flex items-center gap-2 bg-peak-100 dark:bg-peak-900 text-peak-800 dark:text-peak-200 px-4 py-1 rounded-full mb-4">
+                                <i class="fas fa-fire"></i>
+                                <span class="font-semibold">当前市场情绪判断</span>
+                            </div>
+                            <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mt-2">情绪高峰、亢奋期 🚀</h2>
+                            <p class="mt-3 text-gray-600 dark:text-gray-300 max-w-3xl">
+                                投资者情绪非常高涨，信心爆棚，市场情绪达到顶峰。当前市场表现出明显的高潮特征：连板高度达到6板，涨停数量72家远超跌停数量15家，多个热点板块集体爆发。但需警惕可能的退潮风险。
+                            </p>
+                            
+                            <div class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg">
+                                    <div class="text-amber-800 dark:text-amber-200 font-bold text-xl">6板</div>
+                                    <div class="text-sm text-amber-600 dark:text-amber-400 mt-1">最高连板高度</div>
+                                </div>
+                                <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg">
+                                    <div class="text-amber-800 dark:text-amber-200 font-bold text-xl">72家</div>
+                                    <div class="text-sm text-amber-600 dark:text-amber-400 mt-1">涨停数量</div>
+                                </div>
+                                <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg">
+                                    <div class="text-amber-800 dark:text-amber-200 font-bold text-xl">15家</div>
+                                    <div class="text-sm text-amber-600 dark:text-amber-400 mt-1">跌停数量</div>
+                                </div>
+                                <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg">
+                                    <div class="text-amber-800 dark:text-amber-200 font-bold text-xl">5+</div>
+                                    <div class="text-sm text-amber-600 dark:text-amber-400 mt-1">热点板块</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-col items-center justify-center bg-amber-50 dark:bg-gray-800 rounded-xl p-6 min-w-[240px]">
+                            <div class="w-24 h-24 rounded-full bg-gradient-to-r from-amber-400 to-amber-600 flex items-center justify-center mb-4">
+                                <i class="fas fa-rocket text-white text-4xl"></i>
+                            </div>
+                            <div class="text-center">
+                                <div class="font-bold text-lg text-amber-700 dark:text-amber-300">亢奋期风险提示</div>
+                                <p class="mt-2 text-sm text-amber-600 dark:text-amber-400">警惕高位股风险，注意中位股分歧</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">关键特征分析</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div class="feature-item bg-amber-50 dark:bg-amber-900/10 p-4 rounded-lg flex items-start gap-3">
+                                <div class="mt-0.5 text-amber-500">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium">连板高度达到6板以上</div>
+                                    <div class="text-sm text-amber-600 dark:text-amber-400 mt-1">尚纬股份6连板、融发核电5连板、均瑶健康4连板</div>
+                                </div>
+                            </div>
+                            
+                            <div class="feature-item bg-amber-50 dark:bg-amber-900/10 p-4 rounded-lg flex items-start gap-3">
+                                <div class="mt-0.5 text-amber-500">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium">板块出现批量涨停潮</div>
+                                    <div class="text-sm text-amber-600 dark:text-amber-400 mt-1">无人驾驶(18家)、机器人(14家)、金融科技(12家)等</div>
+                                </div>
+                            </div>
+                            
+                            <div class="feature-item bg-amber-50 dark:bg-amber-900/10 p-4 rounded-lg flex items-start gap-3">
+                                <div class="mt-0.5 text-amber-500">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium">涨停数量远超跌停数量</div>
+                                    <div class="text-sm text-amber-600 dark:text-amber-400 mt-1">涨停72家，跌停仅15家（多为ST股）</div>
+                                </div>
+                            </div>
+                            
+                            <div class="feature-item bg-amber-50 dark:bg-amber-900/10 p-4 rounded-lg flex items-start gap-3">
+                                <div class="mt-0.5 text-amber-500">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium">龙头股连续缩量加速</div>
+                                    <div class="text-sm text-amber-600 dark:text-amber-400 mt-1">多只龙头股一字涨停或快速封板</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 策略建议 -->
+        <section class="mb-16 fade-in">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">策略建议</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="strategy-card bg-gradient-to-br from-amber-100 to-amber-50 dark:from-amber-900/30 dark:to-gray-800 rounded-2xl p-6 border border-amber-200 dark:border-amber-700">
+                    <div class="w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center mb-4">
+                        <i class="fas fa-crown text-white text-xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-amber-800 dark:text-amber-200">聚焦市场总龙头</h3>
+                    <p class="mt-2 text-amber-700 dark:text-amber-300">
+                        竞价就抢龙头、抢一字涨停板，做焦点中的焦点。如尚纬股份（6连板）、融发核电（5连板）等市场核心龙头。
+                    </p>
+                </div>
+                
+                <div class="strategy-card bg-gradient-to-br from-amber-100 to-amber-50 dark:from-amber-900/30 dark:to-gray-800 rounded-2xl p-6 border border-amber-200 dark:border-amber-700">
+                    <div class="w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center mb-4">
+                        <i class="fas fa-layer-group text-white text-xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-amber-800 dark:text-amber-200">把握补涨机会</h3>
+                    <p class="mt-2 text-amber-700 dark:text-amber-300">
+                        围绕总龙头的主涨属性（如核电、无人驾驶、机器人）选择属性最正、股性最好的个股做补涨。
+                    </p>
+                </div>
+                
+                <div class="strategy-card bg-gradient-to-br from-amber-100 to-amber-50 dark:from-amber-900/30 dark:to-gray-800 rounded-2xl p-6 border border-amber-200 dark:border-amber-700">
+                    <div class="w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center mb-4">
+                        <i class="fas fa-chess-rook text-white text-xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-amber-800 dark:text-amber-200">重仓持股待涨</h3>
+                    <p class="mt-2 text-amber-700 dark:text-amber-300">
+                        在龙头未出现明显见顶信号前，分歧加仓总龙头，重仓持股待涨是最佳策略。
+                    </p>
+                </div>
+                
+                <div class="strategy-card bg-gradient-to-br from-amber-100 to-amber-50 dark:from-amber-900/30 dark:to-gray-800 rounded-2xl p-6 border border-amber-200 dark:border-amber-700">
+                    <div class="w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center mb-4">
+                        <i class="fas fa-stopwatch text-white text-xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-amber-800 dark:text-amber-200">警惕退潮信号</h3>
+                    <p class="mt-2 text-amber-700 dark:text-amber-300">
+                        密切关注中位股跳水、高位股亏钱效应增加、炸板率上升等退潮信号，做好撤退准备。
+                    </p>
+                </div>
+            </div>
+            
+            <div class="mt-6 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-2xl p-6">
+                <div class="flex items-start gap-3">
+                    <div class="mt-1 text-amber-500">
+                        <i class="fas fa-exclamation-triangle text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">风险提示</h3>
+                        <p class="mt-2 text-gray-700 dark:text-gray-300">
+                            当前市场处于情绪亢奋期，虽然赚钱效应明显，但风险也在累积。需密切关注以下风险信号：
+                        </p>
+                        
+                        <ul class="mt-4 space-y-3 list-disc list-inside text-amber-700 dark:text-amber-300">
+                            <li>高位股连续加速后的获利盘抛压</li>
+                            <li>中位股开始出现分歧（如部分中位股开板）</li>
+                            <li>ST股批量跌停（今日15家跌停）</li>
+                            <li>热点轮动加速可能导致的接力风险</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 情绪阶段概览 -->
+        <section class="mb-16 fade-in">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">情绪周期阶段概览</h2>
+            
+            <div class="relative">
+                <!-- 进度条 -->
+                <div class="absolute top-8 left-4 md:left-8 right-4 md:right-8 h-2 bg-gray-200 dark:bg-gray-700 rounded-full z-0">
+                    <div class="h-2 bg-gradient-to-r from-blue-500 via-green-500 to-amber-500 rounded-full" style="width: 80%"></div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-6 relative z-10">
+                    <!-- 冰点期 -->
+                    <div class="stage-card bg-ice-100 dark:bg-ice-900 border border-ice-300 dark:border-ice-700 rounded-xl p-5">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="font-semibold text-ice-800 dark:text-ice-200">冰点期</h3>
+                            <div class="w-8 h-8 rounded-full bg-ice-500 flex items-center justify-center">
+                                <span class="text-white font-bold">1</span>
+                            </div>
+                        </div>
+                        <p class="text-sm text-ice-700 dark:text-ice-300">情绪极度低迷，亏钱效应明显</p>
+                        <div class="mt-4 text-xs text-ice-600 dark:text-ice-400">
+                            <div class="flex items-center gap-1 mb-1">
+                                <i class="fas fa-arrow-down"></i>
+                                <span>涨停数极少，跌停数多</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <i class="fas fa-compress-alt"></i>
+                                <span>连板高度≤3板</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 混沌期 -->
+                    <div class="stage-card bg-chaos-100 dark:bg-chaos-900 border border-chaos-300 dark:border-chaos-700 rounded-xl p-5">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="font-semibold text-chaos-800 dark:text-chaos-200">混沌期</h3>
+                            <div class="w-8 h-8 rounded-full bg-chaos-500 flex items-center justify-center">
+                                <span class="text-white font-bold">2</span>
+                            </div>
+                        </div>
+                        <p class="text-sm text-chaos-700 dark:text-chaos-300">情绪开始转暖，市场试探方向</p>
+                        <div class="mt-4 text-xs text-chaos-600 dark:text-chaos-400">
+                            <div class="flex items-center gap-1 mb-1">
+                                <i class="fas fa-sync-alt"></i>
+                                <span>炸板率下降</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <i class="fas fa-seedling"></i>
+                                <span>出现4-5板龙头</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 发酵期 -->
+                    <div class="stage-card bg-fermentation-100 dark:bg-fermentation-900 border border-fermentation-300 dark:border-fermentation-700 rounded-xl p-5">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="font-semibold text-fermentation-800 dark:text-fermentation-200">发酵期</h3>
+                            <div class="w-8 h-8 rounded-full bg-fermentation-500 flex items-center justify-center">
+                                <span class="text-white font-bold">3</span>
+                            </div>
+                        </div>
+                        <p class="text-sm text-fermentation-700 dark:text-fermentation-300">赚钱效应扩散，行情确认</p>
+                        <div class="mt-4 text-xs text-fermentation-600 dark:text-fermentation-400">
+                            <div class="flex items-center gap-1 mb-1">
+                                <i class="fas fa-chart-line"></i>
+                                <span>连板股数量增多</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <i class="fas fa-users"></i>
+                                <span>板块效应明显</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 高峰/亢奋期 -->
+                    <div class="stage-card bg-amber-100 dark:bg-amber-900 border-2 border-amber-500 rounded-xl p-5 highlight-current pulse-highlight">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="font-semibold text-amber-800 dark:text-amber-200">高峰/亢奋期</h3>
+                            <div class="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center">
+                                <span class="text-white font-bold">4</span>
+                            </div>
+                        </div>
+                        <p class="text-sm text-amber-700 dark:text-amber-300">情绪高涨，信心爆棚</p>
+                        <div class="mt-4 text-xs text-amber-600 dark:text-amber-400">
+                            <div class="flex items-center gap-1 mb-1">
+                                <i class="fas fa-fire"></i>
+                                <span>连板高度≥6板</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <i class="fas fa-flag"></i>
+                                <span>批量涨停潮</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 退潮期 -->
+                    <div class="stage-card bg-ebb-100 dark:bg-ebb-900 border border-ebb-300 dark:border-ebb-700 rounded-xl p-5">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="font-semibold text-ebb-800 dark:text-ebb-200">退潮期</h3>
+                            <div class="w-8 h-8 rounded-full bg-ebb-500 flex items-center justify-center">
+                                <span class="text-white font-bold">5</span>
+                            </div>
+                        </div>
+                        <p class="text-sm text-ebb-700 dark:text-ebb-300">亏钱效应加大，情绪降温</p>
+                        <div class="mt-4 text-xs text-ebb-600 dark:text-ebb-400">
+                            <div class="flex items-center gap-1 mb-1">
+                                <i class="fas fa-skull"></i>
+                                <span>高位股A杀</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <i class="fas fa-bomb"></i>
+                                <span>天地板大面</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 市场数据概览 -->
+        <section class="fade-in">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">市场数据概览</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-semibold text-gray-900 dark:text-white">涨停分析</h3>
+                        <div class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/50 flex items-center justify-center">
+                            <i class="fas fa-arrow-up text-green-600 dark:text-green-400"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="text-gray-600 dark:text-gray-300">连板高度</span>
+                                <span class="font-medium">6连板</span>
+                            </div>
+                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: 100%"></div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="text-gray-600 dark:text-gray-300">涨停数量</span>
+                                <span class="font-medium">72家</span>
+                            </div>
+                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: 85%"></div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="text-gray-600 dark:text-gray-300">一字涨停</span>
+                                <span class="font-medium">8家</span>
+                            </div>
+                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: 35%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-semibold text-gray-900 dark:text-white">热点板块</h3>
+                        <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center">
+                            <i class="fas fa-bolt text-blue-600 dark:text-blue-400"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-car text-blue-500"></i>
+                                <span>无人驾驶</span>
+                            </div>
+                            <span class="font-medium">18家涨停</span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-robot text-blue-500"></i>
+                                <span>机器人</span>
+                            </div>
+                            <span class="font-medium">14家涨停</span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-money-check-alt text-blue-500"></i>
+                                <span>金融科技</span>
+                            </div>
+                            <span class="font-medium">12家涨停</span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-plug text-blue-500"></i>
+                                <span>电力/核电</span>
+                            </div>
+                            <span class="font-medium">9家涨停</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-semibold text-gray-900 dark:text-white">风险提示</h3>
+                        <div class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/50 flex items-center justify-center">
+                            <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-2">
+                            <i class="fas fa-arrow-trend-down text-red-500 mt-1"></i>
+                            <div>
+                                <div class="font-medium">高位股风险累积</div>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">多只个股连续涨停，注意获利盘抛压</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start gap-2">
+                            <i class="fas fa-compress-arrows-alt text-red-500 mt-1"></i>
+                            <div>
+                                <div class="font-medium">中位股分歧加剧</div>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">部分中位股出现开板现象，晋级失败率上升</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start gap-2">
+                            <i class="fas fa-sync-alt text-red-500 mt-1"></i>
+                            <div>
+                                <div class="font-medium">热点轮动加速</div>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">新热点不断出现，持续性有待观察</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-semibold text-gray-900 dark:text-white">热点板块强度</h3>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">2025-05-29</div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <div class="flex justify-between mb-1">
+                            <span class="text-gray-600 dark:text-gray-300">无人驾驶</span>
+                            <span class="font-medium">18家</span>
+                        </div>
+                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                            <div class="bg-blue-500 h-3 rounded-full" style="width: 90%"></div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="flex justify-between mb-1">
+                            <span class="text-gray-600 dark:text-gray-300">机器人</span>
+                            <span class="font-medium">14家</span>
+                        </div>
+                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                            <div class="bg-blue-500 h-3 rounded-full" style="width: 70%"></div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="flex justify-between mb-1">
+                            <span class="text-gray-600 dark:text-gray-300">金融科技</span>
+                            <span class="font-medium">12家</span>
+                        </div>
+                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                            <div class="bg-blue-500 h-3 rounded-full" style="width: 60%"></div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="flex justify-between mb-1">
+                            <span class="text-gray-600 dark:text-gray-300">电力/核电</span>
+                            <span class="font-medium">9家</span>
+                        </div>
+                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                            <div class="bg-blue-500 h-3 rounded-full" style="width: 45%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <footer class="border-t border-gray-200 dark:border-gray-800 mt-16 py-8">
+        <div class="container mx-auto px-4 text-center text-gray-600 dark:text-gray-400">
+            <p>市场情绪周期判断工具 &copy; 2025 - 基于实时市场数据分析</p>
+            <p class="mt-2 text-sm">数据更新时间: 2025-05-29 15:00</p>
+        </div>
+    </footer>
+    
+    <script>
+        // 主题切换功能
+        const themeToggle = document.getElementById('theme-toggle');
+        const htmlElement = document.documentElement;
+        
+        // 检查系统偏好或保存的主题
+        if (localStorage.getItem('theme') === 'dark' || 
+            (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            htmlElement.classList.add('dark');
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            htmlElement.classList.toggle('dark');
+            localStorage.setItem('theme', htmlElement.classList.contains('dark') ? 'dark' : 'light');
+        });
+        
+        // 添加微交互效果
+        document.querySelectorAll('.stage-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.classList.add('shadow-lg');
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.classList.remove('shadow-lg');
+            });
+        });
+        
+        // 添加滚动动画
+        const observerOptions = {
+            threshold: 0.1
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-in');
+                }
+            });
+        }, observerOptions);
+        
+        document.querySelectorAll('section').forEach(section => {
+            observer.observe(section);
+        });
+        
+        // 按钮悬停效果
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('mouseenter', () => {
+                button.classList.add('scale-105');
+            });
+            button.addEventListener('mouseleave', () => {
+                button.classList.remove('scale-105');
+            });
+        });
+    </script>
+</body>
+</html>

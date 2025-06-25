@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>牛市板块轮动顺序分析 | 2025最新版</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #2a4d69, #4b86b4);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #ff6b6b, #ffd166, #06d6a0, #118ab2, #073b4c);
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            color: #1a2a6c;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .subtitle {
+            font-size: 1.3rem;
+            color: #4a5568;
+            max-width: 800px;
+            margin: 0 auto 20px;
+        }
+        
+        .date-tag {
+            display: inline-block;
+            background: #ffd166;
+            color: #333;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-top: 10px;
+            font-size: 1rem;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .card-header i {
+            font-size: 1.8rem;
+            margin-right: 15px;
+            width: 50px;
+            height: 50px;
+            background: #e6f7ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        
+        .card h2 {
+            font-size: 1.8rem;
+            color: #1a2a6c;
+        }
+        
+        .card h3 {
+            font-size: 1.4rem;
+            color: #2a4d69;
+            margin: 20px 0 15px;
+            padding-left: 10px;
+            border-left: 4px solid #ffd166;
+        }
+        
+        .stage-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .stage-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .stage-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .stage-number {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 4rem;
+            font-weight: bold;
+            color: rgba(26, 42, 108, 0.1);
+            z-index: 1;
+        }
+        
+        .stage-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .stage-title {
+            font-size: 1.6rem;
+            color: #1a2a6c;
+            margin: 0;
+        }
+        
+        .stage-tag {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-left: 15px;
+        }
+        
+        .stage-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .stage-card ul {
+            padding-left: 20px;
+            margin: 15px 0;
+        }
+        
+        .stage-card li {
+            margin-bottom: 12px;
+            position: relative;
+        }
+        
+        .stage-card li::before {
+            content: "•";
+            color: #118ab2;
+            font-weight: bold;
+            display: inline-block;
+            width: 1em;
+            margin-left: -1em;
+        }
+        
+        .signal {
+            display: inline-block;
+            background: #e6f7ff;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            margin: 3px;
+        }
+        
+        .sector {
+            display: inline-block;
+            background: #ffefd5;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            margin: 3px;
+        }
+        
+        .timeline {
+            display: flex;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            overflow-x: auto;
+        }
+        
+        .timeline-phase {
+            min-width: 200px;
+            padding: 20px;
+            border-right: 1px dashed #e0e0e0;
+            position: relative;
+        }
+        
+        .timeline-phase:last-child {
+            border-right: none;
+        }
+        
+        .timeline-phase h4 {
+            font-size: 1.2rem;
+            color: #1a2a6c;
+            margin-bottom: 15px;
+        }
+        
+        .timeline-phase p {
+            font-size: 0.9rem;
+            color: #4a5568;
+        }
+        
+        .timeline-badge {
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: #ff6b6b;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+        
+        .current-phase {
+            background: #e6f7ff;
+            border-radius: 10px;
+            position: relative;
+        }
+        
+        .current-phase::after {
+            content: "当前阶段";
+            position: absolute;
+            top: -10px;
+            right: 15px;
+            background: #06d6a0;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .summary {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            margin-top: 30px;
+            border-left: 5px solid #ffd166;
+        }
+        
+        .summary h2 {
+            font-size: 2rem;
+            color: #1a2a6c;
+            margin-bottom: 20px;
+        }
+        
+        .summary-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .strategy-box {
+            background: #e6f7ff;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .risk-box {
+            background: #ffefef;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .summary h3 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .summary h3 i {
+            margin-right: 10px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: white;
+            margin-top: 40px;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 900px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .summary-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .stage-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>牛市板块轮动顺序分析</h1>
+            <p class="subtitle">资金流向、政策导向与市场情绪共同作用的板块轮动规律（2025最新版）</p>
+            <div class="date-tag">更新日期：2025年6月25日</div>
+        </header>
+        
+        <div class="dashboard">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-chart-line"></i>
+                    <h2>当前市场阶段</h2>
+                </div>
+                <h3>第一阶段向第三阶段过渡</h3>
+                <p>根据2025年最新市场数据，当前市场正处于<strong>金融板块启动</strong>向<strong>科技主升浪</strong>的过渡阶段。</p>
+                
+                <h3>关键指标</h3>
+                <ul>
+                    <li>银行持续走强，券商交易活跃度提升</li>
+                    <li>科技股调整近3个月，成交占比降至低位</li>
+                    <li>上证指数在3400点震荡蓄势</li>
+                    <li>政策底（平准基金）封杀向下空间</li>
+                </ul>
+                
+                <h3>操作建议</h3>
+                <p>持有银行底仓，逢低布局业绩明朗的科技股（光模块、创新药），警惕题材股三日游风险。</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-lightbulb"></i>
+                    <h2>2025年新特征</h2>
+                </div>
+                <h3>政策变量</h3>
+                <p>科创板改革推动科技主线，高股息资产（银行）成为防御性选择。</p>
+                
+                <h3>流动性结构</h3>
+                <p>险资、年金等长线资金占比上升（2024年险资权益投资占比12.7%），压制波动但拉长轮动周期。</p>
+                
+                <h3>外部扰动因素</h3>
+                <ul>
+                    <li>中东地缘冲突持续影响</li>
+                    <li>国际贸易关税问题尚未完全解决</li>
+                    <li>全球货币政策分化加剧</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="timeline">
+            <div class="timeline-phase">
+                <div class="timeline-badge">1</div>
+                <h4>金融券商打头阵</h4>
+                <p>市场冲锋号，受益于交易量激增和政策利好</p>
+                <p><strong>代表板块：</strong>券商、银行、保险</p>
+            </div>
+            
+            <div class="timeline-phase">
+                <div class="timeline-badge">2</div>
+                <h4>周期与蓝筹接力</h4>
+                <p>估值修复阶段，经济数据回暖驱动</p>
+                <p><strong>代表板块：</strong>有色金属、建材、家电</p>
+            </div>
+            
+            <div class="timeline-phase current-phase">
+                <div class="timeline-badge">3</div>
+                <h4>科技成长主升浪</h4>
+                <p>创新驱动阶段，产业突破带来主升浪</p>
+                <p><strong>代表板块：</strong>半导体、AI、新能源</p>
+            </div>
+            
+            <div class="timeline-phase">
+                <div class="timeline-badge">4</div>
+                <h4>题材与低价股狂欢</h4>
+                <p>情绪博弈阶段，散户加速入场</p>
+                <p><strong>代表板块：</strong>重组概念、区域经济</p>
+            </div>
+            
+            <div class="timeline-phase">
+                <div class="timeline-badge">5</div>
+                <h4>风险释放阶段</h4>
+                <p>牛熊转换信号，权重股护盘</p>
+                <p><strong>代表板块：</strong>石油、电力</p>
+            </div>
+        </div>
+        
+        <div class="stage-cards">
+            <div class="stage-card">
+                <div class="stage-number">1</div>
+                <div class="stage-header">
+                    <h3 class="stage-title">金融启动</h3>
+                    <span class="stage-tag" style="background:#ffefd5;">冲锋号</span>
+                </div>
+                <div class="stage-content">
+                    <p><strong>触发信号：</strong><br>
+                        <span class="signal">市场交易量激增</span>
+                        <span class="signal">政策利好（注册制改革）</span>
+                    </p>
+                    
+                    <p><strong>代表板块：</strong><br>
+                        <span class="sector">券商（中信证券）</span>
+                        <span class="sector">银行（招商银行）</span>
+                        <span class="sector">保险</span>
+                    </p>
+                    
+                    <p><strong>核心逻辑：</strong>券商直接受益于市场活跃度提升，银行因高股息（5%-6%）吸引险资等长线资金。</p>
+                    
+                    <p><strong>操作要点：</strong></p>
+                    <ul>
+                        <li>右侧追击放量突破个股</li>
+                        <li>避免过早抄底</li>
+                        <li>关注交易量变化趋势</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="stage-card">
+                <div class="stage-number">2</div>
+                <div class="stage-header">
+                    <h3 class="stage-title">周期接力</h3>
+                    <span class="stage-tag" style="background:#e6f7ff;">估值修复</span>
+                </div>
+                <div class="stage-content">
+                    <p><strong>触发信号：</strong><br>
+                        <span class="signal">经济数据回暖</span>
+                        <span class="signal">大宗商品涨价</span>
+                    </p>
+                    
+                    <p><strong>代表板块：</strong><br>
+                        <span class="sector">有色金属（铜、锂）</span>
+                        <span class="sector">建材（海螺水泥）</span>
+                        <span class="sector">家电</span>
+                    </p>
+                    
+                    <p><strong>核心逻辑：</strong>政策松绑（如地产链）叠加出口韧性（关税冲击下船舶、汽车设备逆势增长）。</p>
+                    
+                    <p><strong>风险提示：</strong></p>
+                    <ul>
+                        <li>需跟踪期货价格与产能过剩行业数据</li>
+                        <li>避免追高缺乏基本面支撑的个股</li>
+                        <li>关注全球供需变化</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="stage-card">
+                <div class="stage-number">3</div>
+                <div class="stage-header">
+                    <h3 class="stage-title">科技主升</h3>
+                    <span class="stage-tag" style="background:#d5f5e3;">创新驱动</span>
+                </div>
+                <div class="stage-content">
+                    <p><strong>触发信号：</strong><br>
+                        <span class="signal">产业突破（AI算力集群）</span>
+                        <span class="signal">资本开支增长</span>
+                    </p>
+                    
+                    <p><strong>代表板块：</strong><br>
+                        <span class="sector">半导体（北方华创）</span>
+                        <span class="sector">AI应用（科大讯飞）</span>
+                        <span class="sector">新能源（固态电池）</span>
+                    </p>
+                    
+                    <p><strong>核心逻辑：</strong>政策锚定"新质生产力"，科技从概念转向业绩兑现（如半年报光模块需求上修）。</p>
+                    
+                    <p><strong>操作要点：</strong></p>
+                    <ul>
+                        <li>聚焦放量突破的龙头</li>
+                        <li>设定10%-15%止损线</li>
+                        <li>关注业绩预告和订单情况</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="stage-card">
+                <div class="stage-number">4</div>
+                <div class="stage-header">
+                    <h3 class="stage-title">题材狂欢</h3>
+                    <span class="stage-tag" style="background:#fadbd8;">情绪博弈</span>
+                </div>
+                <div class="stage-content">
+                    <p><strong>触发信号：</strong><br>
+                        <span class="signal">散户加速入场</span>
+                        <span class="signal">微盘股补涨</span>
+                    </p>
+                    
+                    <p><strong>代表板块：</strong><br>
+                        <span class="sector">重组概念</span>
+                        <span class="sector">区域经济</span>
+                        <span class="sector">元宇宙等题材股</span>
+                    </p>
+                    
+                    <p><strong>核心逻辑：</strong>市场情绪高涨，资金追逐热点和概念。</p>
+                    
+                    <p><strong>风险提示：</strong></p>
+                    <ul>
+                        <li>泡沫化严重，近期题材持续性仅3天左右</li>
+                        <li>缺乏产业支撑的题材股回调风险大</li>
+                        <li>警惕流动性突然收紧信号</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="summary">
+            <h2><i class="fas fa-clipboard-check"></i> 投资策略与风险控制</h2>
+            <div class="summary-content">
+                <div class="strategy-box">
+                    <h3><i class="fas fa-chess-knight"></i> 轮动策略框架</h3>
+                    <ul>
+                        <li><strong>核心仓位（60%）：</strong>科技（AI算力/半导体）+ 金融（银行/券商）</li>
+                        <li><strong>卫星仓位（30%）：</strong>消费复苏（家电/汽车）、红利股（银行）防御</li>
+                        <li><strong>机动仓位（10%）：</strong>参与新题材的短期机会</li>
+                        <li><strong>节奏把握：</strong>新题材启动首日介入前排股，大涨3天后避免追高</li>
+                    </ul>
+                </div>
+                
+                <div class="risk-box">
+                    <h3><i class="fas fa-exclamation-triangle"></i> 关键风险警示</h3>
+                    <ul>
+                        <li><strong>外部扰动：</strong>中东地缘冲突、关税问题未完全解决</li>
+                        <li><strong>题材陷阱：</strong>缺乏产业支撑的题材股回调超20%</li>
+                        <li><strong>杠杆边界：</strong>融资控制在1.5倍以内，避免单押高波动科技股</li>
+                        <li><strong>流动性风险：</strong>关注货币政策转向信号</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div style="margin-top: 25px; padding: 20px; background: #fff8e1; border-radius: 10px;">
+                <h3><i class="fas fa-gem"></i> 核心投资逻辑</h3>
+                <p style="font-size: 1.1rem; margin-top: 10px;">
+                    <strong>历史规律 + 新变量 = </strong>金融（先行）→ 科技（主升）→ 消费/红利（防御）→ 题材（尾声）
+                </p>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2025 牛市板块轮动分析工具 | 数据来源：市场公开信息及历史规律分析 | 投资有风险，入市需谨慎</p>
+            <p>本工具提供的信息仅供参考，不构成任何投资建议。市场瞬息万变，请结合最新市场动态做出投资决策。</p>
+        </footer>
+    </div>
+
+    <script>
+        // 添加交互效果
+        document.addEventListener('DOMContentLoaded', function() {
+            const stageCards = document.querySelectorAll('.stage-card');
+            
+            stageCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    // 移除所有激活状态
+                    stageCards.forEach(c => c.classList.remove('active'));
+                    
+                    // 添加当前激活状态
+                    this.classList.add('active');
+                });
+            });
+            
+            // 模拟数据更新
+            const dateTag = document.querySelector('.date-tag');
+            setInterval(() => {
+                dateTag.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    dateTag.style.transform = 'scale(1)';
+                }, 300);
+            }, 10000);
+        });
+    </script>
+</body>
+</html>

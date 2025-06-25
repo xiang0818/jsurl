@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>消息分级与投资决策</title>
+    <script src="https://cdn.tailwindcss.com/3.4.3"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        body { background-color: #000000; color: #e5e7eb; font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; }
+        .highlight-color { color: #FFA500; } /* Bright Orange */
+        .highlight-bg-subtle-gradient { background: linear-gradient(to bottom, rgba(255, 165, 0, 0.2), rgba(255, 165, 0, 0.05)); } /* Subtle orange gradient for backgrounds */
+        .card-bg { background-color: #1a1a1a; } /* Dark gray for cards */
+        .mini-card-bg { background-color: #222222; } /* Slightly lighter dark gray for mini-cards */
+        .border-strong { border: 1px solid #FFA500; }
+        .border-subtle { border: 1px solid #333333; }
+
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .animate-on-scroll.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* Staggered animation for grid items */
+        .grid .animate-on-scroll:nth-child(1) { transition-delay: 0.1s; }
+        .grid .animate-on-scroll:nth-child(2) { transition-delay: 0.2s; }
+        .grid .animate-on-scroll:nth-child(3) { transition-delay: 0.3s; }
+        .grid .animate-on-scroll:nth-child(4) { transition-delay: 0.4s; }
+        .grid .animate-on-scroll:nth-child(5) { transition-delay: 0.5s; }
+        /* Add more if needed for larger grids */
+
+        .main-title-zh { font-size: 3rem; line-height: 1.2; } /* text-5xl */
+        @media (min-width: 768px) { .main-title-zh { font-size: 3.75rem; } } /* md:text-6xl */
+        .main-title-en { font-size: 1.25rem; line-height: 1.75rem; } /* text-xl */
+        @media (min-width: 768px) { .main-title-en { font-size: 1.5rem; line-height: 2rem; } } /* md:text-2xl */
+
+        .mini-card-title-large-text { font-size: 2.25rem; line-height: 2.5rem; } /* text-4xl */
+        @media (min-width: 768px) { .mini-card-title-large-text { font-size: 3rem; line-height: 1; } } /* md:text-5xl */
+
+        .mini-card-title-conceptual { font-size: 1.5rem; line-height: 2rem; } /* text-2xl */
+        @media (min-width: 768px) { .mini-card-title-conceptual { font-size: 1.875rem; line-height: 2.25rem; } } /* md:text-3xl */
+
+        .supporting-text { font-size: 0.875rem; line-height: 1.25rem; color: #9ca3af; } /* text-sm text-gray-400 */
+        .optional-subtitle-en { font-size: 0.75rem; line-height: 1rem; color: #6b7280; } /* text-xs text-gray-500 */
+
+        /* Custom gradient for text if needed, though Tailwind's text-orange-500 is good */
+        .text-highlight-gradient {
+            background: linear-gradient(to right, #FFA500, #FFC04D);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-200 font-sans">
+    <div class="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
+
+        <!-- Main Title Section -->
+        <header class="text-center my-12 md:my-16 animate-on-scroll">
+            <i class="fas fa-chart-line highlight-color text-4xl mb-4"></i>
+            <h1 class="main-title-zh font-bold highlight-color">消息分级与投资决策</h1>
+            <p class="main-title-en font-semibold text-gray-400 mt-2">Information Hierarchy & Investment Strategy</p>
+        </header>
+
+        <!-- Introduction -->
+        <section class="mb-12 md:mb-16 animate-on-scroll">
+            <div class="card-bg rounded-xl lg:rounded-2xl p-6 md:p-8 border-subtle shadow-xl">
+                <h2 class="text-3xl font-bold mb-4 highlight-color"><i class="fas fa-info-circle mr-2"></i>引言：信息时代的投资罗盘</h2>
+                <p class="text-lg text-gray-300 leading-relaxed">
+                    在信息爆炸的金融市场，有效筛选和解读各类消息是成功投资的关键。本指南旨在建立一个清晰的消息分级框架，帮助投资者辨别信息价值，优化决策流程，从而在复杂多变的市场环境中稳健前行。
+                </p>
+            </div>
+        </section>
+
+        <!-- Message Tiers Section -->
+        <section class="mb-12 md:mb-16">
+            <h2 class="text-4xl font-bold text-center mb-10 md:mb-12 animate-on-scroll highlight-color"><i class="fas fa-layer-group mr-3"></i>消息分级体系</h2>
+
+            <!-- Tier 1:一级消息 -->
+            <div class="card-bg rounded-xl lg:rounded-2xl p-6 md:p-8 border-subtle shadow-xl mb-8 animate-on-scroll">
+                <div class="flex items-center mb-6">
+                    <span class="text-5xl font-bold highlight-color mr-4">1</span>
+                    <div>
+                        <h3 class="text-3xl font-bold">一级消息（最高优先级）</h3>
+                        <p class="text-gray-400">直接影响宏观经济、行业格局或公司基本面的重大事件。</p>
+                    </div>
+                </div>
+
+                <h4 class="text-xl font-semibold mb-3 mt-6 highlight-color"><i class="fas fa-star mr-2"></i>特点</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                    <!-- Mini-cards for characteristics -->
+                    <div class="mini-card-bg rounded-lg p-4 border-subtle animate-on-scroll">
+                        <h5 class="mini-card-title-conceptual font-bold mb-1">权威来源</h5>
+                        <p class="supporting-text">政府、央行、证监会、上市公司公告等。</p>
+                        <p class="optional-subtitle-en mt-1">Authoritative Sources</p>
+                    </div>
+                    <div class="mini-card-bg rounded-lg p-4 border-subtle animate-on-scroll">
+                        <h5 class="mini-card-title-conceptual font-bold mb-1">全局性影响</h5>
+                        <p class="supporting-text">可能引发市场系统性波动。</p>
+                        <p class="optional-subtitle-en mt-1">Systemic Impact</p>
+                    </div>
+                    <div class="mini-card-bg rounded-lg p-4 border-subtle animate-on-scroll">
+                        <h5 class="mini-card-title-conceptual font-bold mb-1">确定性高</h5>
+                        <p class="supporting-text">信息经过官方确认，可信度极高。</p>
+                        <p class="optional-subtitle-en mt-1">High Certainty</p>
+                    </div>
+                </div>
+
+                <h4 class="text-xl font-semibold mb-3 mt-6 highlight-color"><i class="fas fa-lightbulb mr-2"></i>例子</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Mini-cards for examples -->
+                    <div class="mini-card-bg rounded-lg p-4 border-subtle animate-on-scroll">
+                        <h5 class="mini-card-title-conceptual font-bold mb-1">政策类</h5>
+                        <p class="supporting-text">央行降息/加息、重大财政政策（如减税）、行业监管政策（如新能源补贴）。</p>
+                        <p class="optional-subtitle-en mt-1">Policy Related</p>
+                    </div>
+                    <div class="mini-card-bg rounded-lg p-4 border-subtle animate-on-scroll">
+                        <h5 class="mini-card-title-conceptual font-bold mb-1">公司类</h5>
+                        <p class="supporting-text">财报暴雷/超预期、重大资产重组、退市风险警示、核心高管被调查。</p>
+                        <p class="optional-subtitle-en mt-1">Company Specific</p>
+                    </div>
+                    <div class="mini-card-bg rounded-lg p-4 border-subtle animate-on-scroll">
+                        <h5 class="mini-card-title-conceptual font-bold mb-1">突发事件</h5>
+                        <p class="supporting-text">战争爆发、全球性能源危机、疫情封控政策突变。</p>
+                        <p class="optional-subtitle-en mt-1">Breaking Events</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tier 2: 二级消息 -->
+            <div class="card-bg rounded-xl lg:rounded-2xl p-6 md:p-8 border-subtle shadow-xl mb-8 animate-on-scroll">
+                <div class="flex items-center mb-6">
+                    <span class="text-5xl font-bold highlight-color mr-4">2</span>
+                    <div>
+                        <h3 class="text-3xl font-bold">二级消息（中优先级）</h3>
+                        <p class="text-gray-400">影响行业或板块的中期趋势，或对个股有明确利好/利空的信息。</p>
+                    </div>
+                </div>
+                <h4 class="text-xl font-semibold mb-3 mt-6 highlight-color"><i class="fas fa-star mr-2"></i>特点</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                    <div class="mini-card-bg rounded-lg p-4 border-subtle animate-on-scroll">
+                        <h5 class="mini-card-title-conceptual font-bold mb-1">行业相关性</h5>
+                        <p class="supporting-text">直接影响某一产业链（如芯片、医药）。</p>
+                        <p class="optional-subtitle-en mt-1">Industry Relevance</p>
+                    </div>
+                    <div class="mini-card-bg rounded-lg p-4 border-subtle animate-on-scroll">
+                        <h5 class="mini-card-title-conceptual font-bold mb-1">短期催化</h5>
+                        <p class="supporting-text">可能推动股价阶段性波动。</p>
+                        <p class="optional-subtitle-en mt-1">Short-term Catalyst</p>
+                    </div>
+                    <div class="mini-card-bg rounded-lg p-4 border-subtle animate-on-scroll">
+                        <h5 class="mini-card-title-conceptual font-bold mb-1">来源可靠</h5>
+                        <p class="supporting-text">权威媒体报道、行业协会数据、券商深度报告。</p>
+                        <p class="optional-subtitle-en mt-1">Reliable Sources</p>
+                    </div>
+                </div>
+                <h4 class="text-xl font-semibold mb-3 mt-6 highlight-color"><i class="fas fa-lightbulb mr-2"></i>例子</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="mini-card-bg rounded-lg p-4 border-subtle animate-on-scroll">
+                        <h5 class="mini-card-title-conceptual font-bold mb-1">行业动态</h5>
+                        <p class="supporting-text">行业技术突破（如固态电池量产）、政策支持（如“十四五”规划重点方向）。</p>
+                        <p class="optional-subtitle-en mt-1">Industry Dynamics</p>
+                    </div>
+                    <div class="mini-card-bg rounded-lg p-4 border-subtle animate-on-scroll">
+                        <h5 class="mini-card-title-conceptual font-bold mb-1">公司事件</h5>
+                        <p class="supporting-text">签订大额订单、新产品上市、股东增减持计划。</p>
+                        <p class="optional-subtitle-en mt-1">Company Events</p>
+                    </div>
+                    <div class="mini-card-bg rounded-lg p-4 border-subtle animate-on-scroll">
+                        <h5 class="mini-card-title-conceptual font-bold mb-1">资金动向</h5>
+                        <p class="supporting-text">北向资金大幅流入某板块、社保基金持仓变动。</p>
+                        <p class="optional-subtitle-en mt-1">Capital Flows</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tier 3: 三级消息 -->
+            <div class="card-bg rounded-xl lg:rounded-2xl p-6 md:p-8 border-subtle shadow-xl mb-8 animate-on-scroll">
+                <div class="flex items-center mb-6">
+                    <span class="text-5xl font-bold highlight-color mr-4">3</span>
+                    <div>
+                        <h3 class="text-3xl font-bold">三级消息（低优先级）</h3>
+                        <p class="text-gray-400">短期情绪或技术面信号，可靠性较低，需结合其他因素验证。</p>
+                    </div>
+                </div>
+                <h4 class="text-xl font-semibold mb-3 mt-6 highlight-color"><i class="fas fa-star mr-2"></i>特点</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                     <div class="mini-card-bg rounded-lg p-4 border-subtle animate-on-scroll">
+                        <h5 class="mini-card-title-conceptual font-bold mb-1">情绪驱动</h5>
+                        <p class="supporting-text">依赖市场心理或资金博弈。</p>
+                        <p class="optional-subtitle-en mt-1">Sentiment Driven</p>
+                    </div>
+                    <div class="mini-card-bg rounded-lg p-4 border-subtle animate-on-scroll">
+                        <h5 class="mini-card-title-conceptual font-bold mb-1">时效性短</h5>
+                        <p class="supporting-text">影响可能仅持续数小时至数日。</p>
+                        <p class="optional-subtitle-en mt-1">Short Lived</p>
+                    </div>
+                    <div class="mini-card-bg rounded-lg p-4 border-subtle animate-on-scroll">
+                        <h5 class="mini-card-title-conceptual font-bold mb-1">风险较高</h5>
+                        <p class="supporting-text">易被操纵或证伪。</p>
+                        <p class="optional-subtitle-en mt-1">Higher Risk</p>
+                    </div>
+                </div>
+                <h4 class="text-xl font-semibold mb-3 mt-6 highlight-color"><i class="fas fa-lightbulb mr-2"></i>例子</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="mini-card-bg rounded-lg p-4 border-subtle animate-on-scroll">
+                        <h5 class="mini-card-title-conceptual font-bold mb-1">市场传闻</h5>
+                        <p class="supporting-text">社交媒体流传的“小道消息”（如某公司被借壳）。</p>
+                        <p class="optional-subtitle-en mt-1">Market Rumors</p>
+                    </div>
+                    <div class="mini-card-bg rounded-lg p-4 border-subtle animate-on-scroll">
+                        <h5 class="mini-card-title-conceptual font-bold mb-1">技术信号</h5>
+                        <p class="supporting-text">K线突破压力位、成交量异常放大。</p>
+                        <p class="optional-subtitle-en mt-1">Technical Signals</p>
+                    </div>
+                    <div class="mini-card-bg rounded-lg p-4 border-subtle animate-on-scroll">
+                        <h5 class="mini-card-title-conceptual font-bold mb-1">游资炒作</h5>
+                        <p class="supporting-text">题材概念（如元宇宙、鸿蒙概念）的短期热炒。</p>
+                        <p class="optional-subtitle-en mt-1">Speculative Trading</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tier 4: 噪音消息 -->
+            <div class="card-bg rounded-xl lg:rounded-2xl p-6 md:p-8 border-subtle shadow-xl animate-on-scroll highlight-bg-subtle-gradient"> <!-- Subtle gradient for emphasis -->
+                <div class="flex items-center mb-6">
+                     <span class="text-5xl font-bold highlight-color mr-4"><i class="fas fa-volume-mute"></i></span>
+                    <div>
+                        <h3 class="text-3xl font-bold">噪音消息（需警惕）</h3>
+                        <p class="text-gray-400">无实质依据、误导性强的信息，可能为市场操纵工具。</p>
+                    </div>
+                </div>
+                 <h4 class="text-xl font-semibold mb-3 mt-6 highlight-color"><i class="fas fa-exclamation-triangle mr-2"></i>特点</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                    <div class="mini-card-bg rounded-lg p-4 border-subtle animate-on-scroll">
+                        <h5 class="mini-card-title-conceptual font-bold mb-1">来源模糊</h5>
+                        <p class="supporting-text">匿名论坛、聊天群、自媒体“老师”推荐。</p>
+                        <p class="optional-subtitle-en mt-1">Vague Sources</p>
+                    </div>
+                    <div class="mini-card-bg rounded-lg p-4 border-subtle animate-on-scroll">
+                        <h5 class="mini-card-title-conceptual font-bold mb-1">夸大表述</h5>
+                        <p class="supporting-text">常用“内幕”“必涨”“紧急建仓”等词汇。</p>
+                        <p class="optional-subtitle-en mt-1">Exaggerated Claims</p>
+                    </div>
+                    <div class="mini-card-bg rounded-lg p-4 border-subtle animate-on-scroll">
+                        <h5 class="mini-card-title-conceptual font-bold mb-1">诱导交易</h5>
+                        <p class="supporting-text">配合拉高出货或制造恐慌。</p>
+                        <p class="optional-subtitle-en mt-1">Induces Trading</p>
+                    </div>
+                </div>
+                <h4 class="text-xl font-semibold mb-3 mt-6 highlight-color"><i class="fas fa-lightbulb mr-2"></i>例子</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4"> <!-- Fewer examples for noise -->
+                    <div class="mini-card-bg rounded-lg p-4 border-subtle animate-on-scroll">
+                        <h5 class="mini-card-title-conceptual font-bold mb-1">“内幕”涨停股</h5>
+                        <p class="supporting-text">“神秘大佬透露明日涨停股”。</p>
+                        <p class="optional-subtitle-en mt-1">"Insider" Tips</p>
+                    </div>
+                    <div class="mini-card-bg rounded-lg p-4 border-subtle animate-on-scroll">
+                        <h5 class="mini-card-title-conceptual font-bold mb-1">无证据收购</h5>
+                        <p class="supporting-text">“某公司即将被外资收购”（无官方证据）。</p>
+                        <p class="optional-subtitle-en mt-1">Unverified Acquisitions</p>
+                    </div>
+                     <div class="mini-card-bg rounded-lg p-4 border-subtle animate-on-scroll sm:col-span-2 lg:col-span-1"> <!-- Example of spanning for odd numbers -->
+                        <h5 class="mini-card-title-conceptual font-bold mb-1">盘口异常</h5>
+                        <p class="supporting-text">盘口异常挂单（对倒制造假象）。</p>
+                        <p class="optional-subtitle-en mt-1">Order Book Anomalies</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Key Principles Section -->
+        <section class="mb-12 md:mb-16">
+            <h2 class="text-4xl font-bold text-center mb-10 md:mb-12 animate-on-scroll highlight-color"><i class="fas fa-cogs mr-3"></i>处理消息的关键原则</h2>
+            <div class="card-bg rounded-xl lg:rounded-2xl p-6 md:p-8 border-subtle shadow-xl animate-on-scroll">
+                <!-- Principle 1: Cross-Validation -->
+                <div class="mb-8 pb-6 border-b border-gray-700 animate-on-scroll">
+                    <h3 class="text-2xl font-semibold mb-3 highlight-color"><i class="fas fa-check-double mr-2"></i>交叉验证 (Cross-Validation)</h3>
+                    <p class="text-gray-300 mb-3">确保信息准确性的首要步骤。</p>
+                    <div class="mini-card-bg rounded-lg p-4 border-subtle">
+                        <p class="supporting-text text-base">一级消息看官方渠道，二级消息对比多方信源（如政策原文 vs 媒体解读）。</p>
+                        <p class="optional-subtitle-en mt-1">Verify Tier 1 via official channels; Tier 2 via multiple credible sources.</p>
+                    </div>
+                </div>
+
+                <!-- Principle 2: Impact Analysis -->
+                <div class="mb-8 pb-6 border-b border-gray-700 animate-on-scroll">
+                    <h3 class="text-2xl font-semibold mb-3 highlight-color"><i class="fas fa-chart-pie mr-2"></i>影响分析 (Impact Analysis)</h3>
+                    <p class="text-gray-300 mb-3">深入理解信息背后的真实含义和潜在影响。</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="mini-card-bg rounded-lg p-4 border-subtle animate-on-scroll">
+                            <h5 class="mini-card-title-conceptual font-bold mb-1">政策类</h5>
+                            <p class="supporting-text">判断是短期刺激（如消费券）还是长期红利（如碳中和）。</p>
+                            <p class="optional-subtitle-en mt-1">Policy: Short-term vs. Long-term</p>
+                        </div>
+                        <div class="mini-card-bg rounded-lg p-4 border-subtle animate-on-scroll">
+                            <h5 class="mini-card-title-conceptual font-bold mb-1">行业类</h5>
+                            <p class="supporting-text">区分概念炒作（如元宇宙）与实质受益（如光伏技术迭代）。</p>
+                            <p class="optional-subtitle-en mt-1">Industry: Hype vs. Real Benefit</p>
+                        </div>
+                        <div class="mini-card-bg rounded-lg p-4 border-subtle animate-on-scroll">
+                            <h5 class="mini-card-title-conceptual font-bold mb-1">公司类</h5>
+                            <p class="supporting-text">财报需关注现金流、ROE等核心指标，而非单纯净利润。</p>
+                            <p class="optional-subtitle-en mt-1">Company: Core Metrics (Cash Flow, ROE)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Principle 3: Risk Control -->
+                <div class="mb-8 pb-6 border-b border-gray-700 animate-on-scroll">
+                    <h3 class="text-2xl font-semibold mb-3 highlight-color"><i class="fas fa-shield-alt mr-2"></i>风险控制 (Risk Control)</h3>
+                    <p class="text-gray-300 mb-3">根据消息级别调整风险敞口。</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="mini-card-bg rounded-lg p-4 border-subtle animate-on-scroll">
+                            <h5 class="mini-card-title-conceptual font-bold mb-1">一级消息应对</h5>
+                            <p class="supporting-text">可能导致跳空高开/低开，需避免追涨杀跌。</p>
+                            <p class="optional-subtitle-en mt-1">Tier 1: Avoid Chasing Gaps</p>
+                        </div>
+                        <div class="mini-card-bg rounded-lg p-4 border-subtle animate-on-scroll">
+                            <h5 class="mini-card-title-conceptual font-bold mb-1">三级与噪音消息</h5>
+                            <p class="supporting-text">建议轻仓试错，设置严格止损。</p>
+                            <p class="optional-subtitle-en mt-1">Tier 3 & Noise: Light Positions, Strict Stop-loss</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Principle 4: Time Dimension -->
+                <div class="animate-on-scroll">
+                    <h3 class="text-2xl font-semibold mb-3 highlight-color"><i class="fas fa-clock mr-2"></i>时间维度 (Time Dimension)</h3>
+                    <p class="text-gray-300 mb-3">投资周期决定关注焦点。</p>
+                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="mini-card-bg rounded-lg p-4 border-subtle animate-on-scroll">
+                            <h5 class="mini-card-title-conceptual font-bold mb-1">长线投资者</h5>
+                            <p class="supporting-text">聚焦一级和二级消息中的基本面变化。</p>
+                            <p class="optional-subtitle-en mt-1">Long-term: Focus on Fundamentals (Tier 1 & 2)</p>
+                        </div>
+                        <div class="mini-card-bg rounded-lg p-4 border-subtle animate-on-scroll">
+                            <h5 class="mini-card-title-conceptual font-bold mb-1">短线交易者</h5>
+                            <p class="supporting-text">可结合三级消息与技术面，但需快进快出。</p>
+                            <p class="optional-subtitle-en mt-1">Short-term: Tier 3 & Technicals (Quick In/Out)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Case Studies Section -->
+        <section class="mb-12 md:mb-16">
+            <h2 class="text-4xl font-bold text-center mb-10 md:mb-12 animate-on-scroll highlight-color"><i class="fas fa-book-open mr-3"></i>案例说明</h2>
+            <div class="card-bg rounded-xl lg:rounded-2xl p-6 md:p-8 border-subtle shadow-xl animate-on-scroll">
+                <div class="mb-6 animate-on-scroll">
+                    <h3 class="text-2xl font-semibold mb-2"><span class="highlight-color"><i class="fas fa-check-circle mr-2"></i>一级消息应用：</span>数字经济浪潮</h3>
+                    <p class="text-gray-300 bg-gray-700 p-4 rounded-lg">
+                        2023年中央经济工作会议提出“大力发展数字经济”，次日数据要素、信创板块集体高开，但需筛选真正受益标的（如国资云、数据交易所合作企业）。
+                    </p>
+                    <p class="optional-subtitle-en mt-1 text-sm">Tier 1 Application: Digital Economy Initiative</p>
+                </div>
+                <hr class="border-gray-700 my-6">
+                <div class="animate-on-scroll">
+                    <h3 class="text-2xl font-semibold mb-2"><span class="highlight-color"><i class="fas fa-times-circle mr-2"></i>噪音消息教训：</span>虚假特效药信息</h3>
+                    <p class="text-gray-300 bg-gray-700 p-4 rounded-lg">
+                        某微信群传播“某药企新冠特效药获批”，股价盘中急涨后辟谣，跟风者被套。
+                    </p>
+                    <p class="optional-subtitle-en mt-1 text-sm">Noise Example: False Drug Approval Rumor</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Summary Section -->
+        <section class="mb-12 md:mb-16 animate-on-scroll">
+            <div class="card-bg rounded-xl lg:rounded-2xl p-6 md:p-8 border-subtle shadow-xl highlight-bg-subtle-gradient">
+                <h2 class="text-3xl font-bold mb-4 highlight-color"><i class="fas fa-lightbulb mr-2"></i>总结：洞察信息，稳健投资</h2>
+                <p class="text-lg text-gray-300 leading-relaxed">
+                    消息分级的核心在于**辨别信息对资产价值的真实影响**。投资者应优先关注并深入分析高优先级消息的内在逻辑和长远影响，对低优先级消息保持警惕、仅作参考，并坚决回避市场噪音。最终，成功的投资应**立足于基本面分析**，避免成为市场短期情绪的牺牲品，实现理性决策与价值投资。
+                </p>
+                 <p class="optional-subtitle-en mt-2 text-sm">Conclusion: Discern Information, Invest Wisely. Focus on fundamental impact, avoid emotional trading.</p>
+            </div>
+        </section>
+
+        <footer class="text-center text-gray-500 text-sm py-8 animate-on-scroll">
+            <p>&copy; <script>document.write(new Date().getFullYear())</script> Information Analysis Framework. All insights derived from provided documentation.</p>
+        </footer>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const animatedElements = document.querySelectorAll('.animate-on-scroll');
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        // Optional: unobserve after animation to save resources
+                        // observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.1 // Trigger when 10% of the element is visible
+            });
+
+            animatedElements.forEach(el => {
+                observer.observe(el);
+            });
+        });
+    </script>
+</body>
+</html>

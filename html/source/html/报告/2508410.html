@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>下周会议前瞻 - 投资机会分析</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        },
+                        secondary: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            200: '#ddd6fe',
+                            300: '#c4b5fd',
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            800: '#5b21b6',
+                            900: '#4c1d95',
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: 0, transform: 'translateY(10px)' },
+                            '100%': { opacity: 1, transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/css">
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f9fafb;
+            color: #1f2937;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        .dark body {
+            background-color: #111827;
+            color: #f3f4f6;
+        }
+        
+        .card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: fade-in 0.6s;
+            animation-delay: calc(0.1s * var(--i));
+        }
+        
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .dark .card:hover {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tag {
+            transition: all 0.2s ease;
+        }
+        
+        .tag:hover {
+            transform: scale(1.05);
+        }
+        
+        .btn {
+            transition: all 0.2s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .sector-chart {
+            height: 12px;
+            border-radius: 6px;
+            background: linear-gradient(90deg, #38bdf8, #8b5cf6, #f87171, #34d399, #fbbf24);
+        }
+        
+        .sector-bar {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 1s ease-out;
+        }
+        
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        
+        .animate-on-scroll.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900">
+    <!-- 主题切换按钮 -->
+    <button id="theme-toggle" class="fixed top-4 right-4 z-50 p-3 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-shadow duration-300">
+        <i class="fas fa-moon text-gray-800 dark:text-yellow-400 dark:block hidden"></i>
+        <i class="fas fa-sun text-yellow-500 dark:text-gray-300 dark:hidden block"></i>
+    </button>
+    
+    <div class="max-w-6xl mx-auto px-4 py-8 sm:px-6">
+        <!-- 页眉 -->
+        <header class="text-center mb-12 mt-6 animate-on-scroll">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-3">下周会议前瞻</h1>
+            <p class="text-lg text-gray-600 dark:text-gray-300 mb-4">2025年8月4日 - 8月10日</p>
+            <p class="max-w-2xl mx-auto text-gray-500 dark:text-gray-400">
+                分析重要会议活动对资本市场的影响，挖掘潜在投资机会
+            </p>
+            <div class="mt-8 h-1 w-24 bg-gradient-to-r from-primary-500 to-secondary-500 mx-auto rounded-full"></div>
+        </header>
+        
+        <!-- 板块影响概览 -->
+        <section class="mb-16 animate-on-scroll">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">主要受益板块分析</h2>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
+                <div class="sector-chart mb-6">
+                    <div class="sector-bar bg-gradient-to-r from-primary-500 to-secondary-500" style="width: 85%"></div>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <div class="flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div class="w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center mb-3">
+                            <i class="fas fa-microchip text-primary-600 dark:text-primary-400 text-xl"></i>
+                        </div>
+                        <span class="font-medium">半导体</span>
+                        <span class="text-sm text-gray-500 mt-1">高影响</span>
+                    </div>
+                    <div class="flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center mb-3">
+                            <i class="fas fa-robot text-blue-600 dark:text-blue-400 text-xl"></i>
+                        </div>
+                        <span class="font-medium">机器人</span>
+                        <span class="text-sm text-gray-500 mt-1">高影响</span>
+                    </div>
+                    <div class="flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div class="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center mb-3">
+                            <i class="fas fa-flask text-green-600 dark:text-green-400 text-xl"></i>
+                        </div>
+                        <span class="font-medium">生物技术</span>
+                        <span class="text-sm text-gray-500 mt-1">中高影响</span>
+                    </div>
+                    <div class="flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div class="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center mb-3">
+                            <i class="fas fa-chart-line text-purple-600 dark:text-purple-400 text-xl"></i>
+                        </div>
+                        <span class="font-medium">金融科技</span>
+                        <span class="text-sm text-gray-500 mt-1">中影响</span>
+                    </div>
+                    <div class="flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div class="w-12 h-12 rounded-full bg-yellow-100 dark:bg-yellow-900 flex items-center justify-center mb-3">
+                            <i class="fas fa-cogs text-yellow-600 dark:text-yellow-400 text-xl"></i>
+                        </div>
+                        <span class="font-medium">先进制造</span>
+                        <span class="text-sm text-gray-500 mt-1">中影响</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 会议日程 -->
+        <section class="mb-16">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">会议日程及投资机会</h2>
+            
+            <!-- 8月4日 星期一 -->
+            <div class="mb-10">
+                <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center">
+                    <span class="bg-primary-500 text-white px-3 py-1 rounded-full mr-3">8月4日</span>
+                    <span>星期一</span>
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- 会议卡片 1 -->
+                    <div class="card bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden" style="--i:1">
+                        <div class="p-5">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-bold text-lg text-gray-900 dark:text-white mb-1">亚太催化大会 (APCAT-10)</h4>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400 flex items-center mb-3">
+                                        <i class="fas fa-map-marker-alt mr-2"></i>新加坡 | 8月4日-7日
+                                    </p>
+                                </div>
+                                <div class="bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 px-3 py-1 rounded-full text-sm font-medium">
+                                    化工/材料
+                                </div>
+                            </div>
+                            <p class="text-gray-700 dark:text-gray-300 mb-4">
+                                聚焦催化科学最新进展，涵盖能源、环保和化工领域，推动催化剂技术创新。
+                            </p>
+                            <div class="mb-4">
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">利好板块：</span>
+                                <div class="flex flex-wrap gap-2 mt-2">
+                                    <span class="tag bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 px-3 py-1 rounded-full text-sm">化工催化剂</span>
+                                    <span class="tag bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 px-3 py-1 rounded-full text-sm">环保技术</span>
+                                    <span class="tag bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 px-3 py-1 rounded-full text-sm">新能源材料</span>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">关注个股：</span>
+                                <p class="text-gray-600 dark:text-gray-400 mt-2">
+                                    贵研铂业 (600459)、中触媒 (688267)、万润股份 (002643)
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 会议卡片 2 -->
+                    <div class="card bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden" style="--i:2">
+                        <div class="p-5">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-bold text-lg text-gray-900 dark:text-white mb-1">港交所交易规则变更</h4>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400 flex items-center mb-3">
+                                        <i class="fas fa-map-marker-alt mr-2"></i>香港 | 8月4日生效
+                                    </p>
+                                </div>
+                                <div class="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 px-3 py-1 rounded-full text-sm font-medium">
+                                    金融
+                                </div>
+                            </div>
+                            <p class="text-gray-700 dark:text-gray-300 mb-4">
+                                香港证券市场下调最低上落价位的第一阶段生效，提高市场流动性，降低交易成本。
+                            </p>
+                            <div class="mb-4">
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">利好板块：</span>
+                                <div class="flex flex-wrap gap-2 mt-2">
+                                    <span class="tag bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 px-3 py-1 rounded-full text-sm">证券</span>
+                                    <span class="tag bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 px-3 py-1 rounded-full text-sm">金融科技</span>
+                                    <span class="tag bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 px-3 py-1 rounded-full text-sm">港股通标的</span>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">关注个股：</span>
+                                <p class="text-gray-600 dark:text-gray-400 mt-2">
+                                    香港交易所 (00388.HK)、中信证券 (600030)、东方财富 (300059)
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 8月5日 星期二 -->
+            <div class="mb-10">
+                <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center">
+                    <span class="bg-primary-500 text-white px-3 py-1 rounded-full mr-3">8月5日</span>
+                    <span>星期二</span>
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- 会议卡片 3 -->
+                    <div class="card bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden" style="--i:3">
+                        <div class="p-5">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-bold text-lg text-gray-900 dark:text-white mb-1">电子封装技术国际会议</h4>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400 flex items-center mb-3">
+                                        <i class="fas fa-map-marker-alt mr-2"></i>上海 | 8月5日-7日
+                                    </p>
+                                </div>
+                                <div class="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full text-sm font-medium">
+                                    半导体
+                                </div>
+                            </div>
+                            <p class="text-gray-700 dark:text-gray-300 mb-4">
+                                聚焦先进封装技术，推动芯片集成度和性能提升，促进半导体产业链发展。
+                            </p>
+                            <div class="mb-4">
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">利好板块：</span>
+                                <div class="flex flex-wrap gap-2 mt-2">
+                                    <span class="tag bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-3 py-1 rounded-full text-sm">先进封装</span>
+                                    <span class="tag bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-3 py-1 rounded-full text-sm">半导体设备</span>
+                                    <span class="tag bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-3 py-1 rounded-full text-sm">集成电路</span>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">关注个股：</span>
+                                <p class="text-gray-600 dark:text-gray-400 mt-2">
+                                    长电科技 (600584)、通富微电 (002156)、华天科技 (002185)
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 会议卡片 4 -->
+                    <div class="card bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden" style="--i:4">
+                        <div class="p-5">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-bold text-lg text-gray-900 dark:text-white mb-1">IEEE集成电路研讨会</h4>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400 flex items-center mb-3">
+                                        <i class="fas fa-map-marker-alt mr-2"></i>马来西亚 | 8月5日-8日
+                                    </p>
+                                </div>
+                                <div class="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full text-sm font-medium">
+                                    半导体
+                                </div>
+                            </div>
+                            <p class="text-gray-700 dark:text-gray-300 mb-4">
+                                探讨集成电路物理分析和故障诊断技术，提升芯片可靠性和良率。
+                            </p>
+                            <div class="mb-4">
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">利好板块：</span>
+                                <div class="flex flex-wrap gap-2 mt-2">
+                                    <span class="tag bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-3 py-1 rounded-full text-sm">芯片测试</span>
+                                    <span class="tag bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-3 py-1 rounded-full text-sm">半导体设备</span>
+                                    <span class="tag bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-3 py-1 rounded-full text-sm">集成电路设计</span>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">关注个股：</span>
+                                <p class="text-gray-600 dark:text-gray-400 mt-2">
+                                    华峰测控 (688200)、长川科技 (300604)、北方华创 (002371)
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 8月6日 星期三 -->
+            <div class="mb-10">
+                <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center">
+                    <span class="bg-primary-500 text-white px-3 py-1 rounded-full mr-3">8月6日</span>
+                    <span>星期三</span>
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- 会议卡片 5 -->
+                    <div class="card bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden" style="--i:5">
+                        <div class="p-5">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-bold text-lg text-gray-900 dark:text-white mb-1">大疆扫地机器人发布</h4>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400 flex items-center mb-3">
+                                        <i class="fas fa-clock mr-2"></i>20:00
+                                    </p>
+                                </div>
+                                <div class="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-3 py-1 rounded-full text-sm font-medium">
+                                    机器人
+                                </div>
+                            </div>
+                            <p class="text-gray-700 dark:text-gray-300 mb-4">
+                                全球无人机领导者进军家用机器人市场，首款扫地机器人将展示先进导航和AI技术。
+                            </p>
+                            <div class="mb-4">
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">利好板块：</span>
+                                <div class="flex flex-wrap gap-2 mt-2">
+                                    <span class="tag bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 px-3 py-1 rounded-full text-sm">家用机器人</span>
+                                    <span class="tag bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 px-3 py-1 rounded-full text-sm">智能家居</span>
+                                    <span class="tag bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 px-3 py-1 rounded-full text-sm">AI视觉</span>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">关注个股：</span>
+                                <p class="text-gray-600 dark:text-gray-400 mt-2">
+                                    科沃斯 (603486)、石头科技 (688169)、大疆供应链企业
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 会议卡片 6 -->
+                    <div class="card bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden" style="--i:6">
+                        <div class="p-5">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-bold text-lg text-gray-900 dark:text-white mb-1">傅利叶GR-3康养机器人</h4>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400 flex items-center mb-3">
+                                        <i class="fas fa-clock mr-2"></i>全天
+                                    </p>
+                                </div>
+                                <div class="bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 px-3 py-1 rounded-full text-sm font-medium">
+                                    医疗科技
+                                </div>
+                            </div>
+                            <p class="text-gray-700 dark:text-gray-300 mb-4">
+                                傅利叶智能发布第三代医用康养机器人，主打情感交互和陪伴功能，面向老龄化市场。
+                            </p>
+                            <div class="mb-4">
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">利好板块：</span>
+                                <div class="flex flex-wrap gap-2 mt-2">
+                                    <span class="tag bg-pink-100 dark:bg-pink-900/30 text-pink-800 dark:text-pink-300 px-3 py-1 rounded-full text-sm">医疗机器人</span>
+                                    <span class="tag bg-pink-100 dark:bg-pink-900/30 text-pink-800 dark:text-pink-300 px-3 py-1 rounded-full text-sm">智慧康养</span>
+                                    <span class="tag bg-pink-100 dark:bg-pink-900/30 text-pink-800 dark:text-pink-300 px-3 py-1 rounded-full text-sm">AI交互</span>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">关注个股：</span>
+                                <p class="text-gray-600 dark:text-gray-400 mt-2">
+                                    机器人 (300024)、埃斯顿 (002747)、楚天科技 (300358)
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 8月8日 星期五 -->
+            <div class="mb-10">
+                <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center">
+                    <span class="bg-primary-500 text-white px-3 py-1 rounded-full mr-3">8月8日</span>
+                    <span>星期五</span>
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- 会议卡片 7 -->
+                    <div class="card bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden" style="--i:7">
+                        <div class="p-5">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-bold text-lg text-gray-900 dark:text-white mb-1">小红书RED LAND活动</h4>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400 flex items-center mb-3">
+                                        <i class="fas fa-map-marker-alt mr-2"></i>上海 | 8月8日-10日
+                                    </p>
+                                </div>
+                                <div class="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 px-3 py-1 rounded-full text-sm font-medium">
+                                    元宇宙
+                                </div>
+                            </div>
+                            <p class="text-gray-700 dark:text-gray-300 mb-4">
+                                全球首个开放世界冒险岛活动，融合AR/VR技术，打造沉浸式社交体验。
+                            </p>
+                            <div class="mb-4">
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">利好板块：</span>
+                                <div class="flex flex-wrap gap-2 mt-2">
+                                    <span class="tag bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 px-3 py-1 rounded-full text-sm">元宇宙</span>
+                                    <span class="tag bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 px-3 py-1 rounded-full text-sm">数字营销</span>
+                                    <span class="tag bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 px-3 py-1 rounded-full text-sm">AR/VR</span>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">关注个股：</span>
+                                <p class="text-gray-600 dark:text-gray-400 mt-2">
+                                    芒果超媒 (300413)、天下秀 (600556)、歌尔股份 (002241)
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 会议卡片 8 -->
+                    <div class="card bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden" style="--i:8">
+                        <div class="p-5">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-bold text-lg text-gray-900 dark:text-white mb-1">世界机器人博览会</h4>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400 flex items-center mb-3">
+                                        <i class="fas fa-map-marker-alt mr-2"></i>北京 | 8月8日-12日
+                                    </p>
+                                </div>
+                                <div class="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-3 py-1 rounded-full text-sm font-medium">
+                                    机器人
+                                </div>
+                            </div>
+                            <p class="text-gray-700 dark:text-gray-300 mb-4">
+                                全球最大机器人展会，展示工业机器人、服务机器人、特种机器人等全产业链创新成果。
+                            </p>
+                            <div class="mb-4">
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">利好板块：</span>
+                                <div class="flex flex-wrap gap-2 mt-2">
+                                    <span class="tag bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 px-3 py-1 rounded-full text-sm">工业机器人</span>
+                                    <span class="tag bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 px-3 py-1 rounded-full text-sm">服务机器人</span>
+                                    <span class="tag bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 px-3 py-1 rounded-full text-sm">核心零部件</span>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">关注个股：</span>
+                                <p class="text-gray-600 dark:text-gray-400 mt-2">
+                                    埃斯顿 (002747)、汇川技术 (300124)、绿的谐波 (688017)
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 投资策略建议 -->
+        <section class="mb-16 animate-on-scroll">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">投资策略建议</h2>
+            <div class="bg-gradient-to-r from-primary-500 to-secondary-500 rounded-xl shadow-lg p-8 text-white">
+                <div class="max-w-3xl">
+                    <h3 class="text-xl font-bold mb-4">会议驱动型投资机会分析</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <i class="fas fa-robot mt-1 mr-3"></i>
+                            <span><strong>机器人产业链</strong> - 关注核心零部件供应商和系统集成商，短期事件驱动与技术突破带来机会</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-microchip mt-1 mr-3"></i>
+                            <span><strong>半导体先进封装</strong> - 国产替代加速，技术会议催化下关注测试设备和材料供应商</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-user-md mt-1 mr-3"></i>
+                            <span><strong>医疗机器人</strong> - 人口老龄化趋势下的长期赛道，关注具有技术壁垒的创新企业</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-vr-cardboard mt-1 mr-3"></i>
+                            <span><strong>元宇宙应用</strong> - 关注AR/VR硬件厂商和内容平台，短期事件可能带来估值修复</span>
+                        </li>
+                    </ul>
+                    <div class="mt-6 p-4 bg-white/20 rounded-lg">
+                        <p class="font-medium">风险提示：</p>
+                        <p>会议驱动型投资需关注实际技术突破和商业化进展，警惕概念炒作风险。建议结合基本面分析，关注有实际业绩支撑的龙头企业。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 页脚 -->
+        <footer class="pt-8 mt-12 border-t border-gray-200 dark:border-gray-700 text-center text-gray-600 dark:text-gray-400 text-sm">
+            <p>© 2025 投资研究分析平台 | 数据仅供参考，不构成投资建议</p>
+            <p class="mt-2">市场有风险，投资需谨慎</p>
+        </footer>
+    </div>
+    
+    <script>
+        // 主题切换功能
+        const themeToggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+        
+        // 检查本地存储或系统偏好
+        const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        if (savedTheme === 'dark') {
+            html.classList.add('dark');
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+        });
+        
+        // 滚动动画
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        document.querySelectorAll('.animate-on-scroll').forEach(el => {
+            observer.observe(el);
+        });
+        
+        // 页面加载动画
+        document.addEventListener('DOMContentLoaded', () => {
+            // 模拟进度条动画
+            setTimeout(() => {
+                document.querySelector('.sector-bar').style.width = '100%';
+            }, 500);
+        });
+    </script>
+</body>
+</html>
